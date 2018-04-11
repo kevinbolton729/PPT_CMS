@@ -1,0 +1,50 @@
+@import "~antd/lib/style/themes/default.less";
+@import "../../static/index.less";
+
+@media (min-width: @screen-login-pxxs-min) and (max-width: @screen-login-pxxs-max) {
+  .main {
+    width: 276px;
+  }
+}
+@media (min-width: @screen-login-pxs-min) and (max-width: @screen-login-pxs-max) {
+  .main {
+    width: 322px;
+  }
+}
+@media (min-width: @screen-login-ps-min) and (max-width: @screen-login-ps-max) {
+  .main {
+    width: 331px;
+  }
+}
+@media (min-width: @screen-login-p-min) {
+  .main {
+    width: 368px;
+  }
+}
+
+.main {
+  margin: 0 auto;
+
+  .icon {
+    font-size: 24px;
+    color: rgba(0, 0, 0, 0.2);
+    margin-left: 16px;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover {
+      color: @primary-color;
+    }
+  }
+
+  .other {
+    text-align: left;
+    margin-top: 24px;
+    line-height: 22px;
+
+    .register {
+      float: right;
+    }
+  }
+}

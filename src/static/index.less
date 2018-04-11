@@ -1,0 +1,63 @@
+html,
+body,
+:global(#root) {
+  height: 100%;
+}
+:global(.ant-layout) {
+  min-height: 100%;
+}
+:global(.dividerFont) {
+  color: @primary-font-3;
+  font-size: 12px;
+}
+:global(.primaryTheme),
+:global(.uploadSuccess) {
+  color: @primary-theme;
+}
+
+canvas {
+  display: block;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.globalSpin {
+  width: 100%;
+  margin: 70px 0 40px 0 !important;
+}
+
+// temp fix for https://github.com/ant-design/ant-design/commit/a1fafb5b727b62cb0be29ce6e9eca8f579d4f8b7
+:global {
+  .ant-spin-container {
+    overflow: visible !important;
+  }
+}
+
+// User/login响应式设置
+// Media queries breakpoints
+@screen-login-p: 412px;
+@screen-login-p-min: @screen-login-p;
+@screen-login-ps: 375px;
+@screen-login-ps-min: @screen-login-ps;
+@screen-login-pxs: 360px;
+@screen-login-pxs-min: @screen-login-pxs;
+@screen-login-pxxs: 320px;
+@screen-login-pxxs-min: @screen-login-pxxs;
+
+// provide a maximum / login / phone
+@screen-login-ps-max: (@screen-login-p-min - 1px);
+@screen-login-pxs-max: (@screen-login-ps-min - 1px);
+@screen-login-pxxs-max: (@screen-login-pxs-min - 1px);
+
+// 颜色设置
+@primary-theme: #e94444; // #e91e63 / #1da57a 请别忘记修改 src/theme.js
+@primary-theme-menu: #001529;
+@primary-white: #fff;
+@primary-hui: #f0f2f5;
+@primary-font-1: #333;
+@primary-font-2: #ccc;
+@primary-font-3: #e8e8e8;
