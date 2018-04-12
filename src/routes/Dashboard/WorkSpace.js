@@ -2,12 +2,12 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Row, Col, Avatar, Card } from 'antd';
+import { Row, Col, Avatar, Card, Button } from 'antd';
 // 组件
 import PageHeaderLayout from '@/layouts/PageHeaderLayout';
 
 // 常量
-import { URL_PREFIX, ROLE_NAME } from '@/utils/consts';
+import { URL_PREFIX, ROLE_NAME, API_DOMAIN } from '@/utils/consts';
 
 import styles from './WorkSpace.less';
 
@@ -61,6 +61,11 @@ class WorkSpace extends PureComponent {
             {`${this.getShowDate()}！${currentUser.nickname}，祝您开心每一天！`}
           </div>
           <div>{ROLE_NAME}</div>
+          <a download href={`${API_DOMAIN}/api/server/download/5acc984e682e0945e8c6057a`}>
+            <Button type="primary" icon="download">
+              点击下载
+            </Button>
+          </a>
         </div>
       </div>
     );
