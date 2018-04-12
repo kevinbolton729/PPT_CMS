@@ -44,6 +44,15 @@ class WorkSpace extends PureComponent {
     return `${formats[i]}好`;
   };
 
+  // 下载
+  handleDownload = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'workspace/downloadFile',
+      payload: { id: '5acc984e682e0945e8c6057a' },
+    });
+  };
+
   render() {
     const { currentUser } = this.context;
     const { lists, loading } = this.props;
@@ -66,6 +75,9 @@ class WorkSpace extends PureComponent {
               点击下载
             </Button>
           </a>
+          {/* <Button type="primary" icon="download" onClick={this.handleDownload}>
+            点击下载
+          </Button> */}
         </div>
       </div>
     );

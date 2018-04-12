@@ -1,5 +1,5 @@
 // import { message as openMessage } from 'antd';
-import { getSiteNums, getArticleNums, getArticleTodayNums } from '@/services/api';
+import { getSiteNums, getArticleNums, getArticleTodayNums, downloadFile } from '@/services/api';
 import { parseResponse } from '@/utils/parse';
 // 常量
 // import { PAGELOGIN } from '@/utils/consts';
@@ -47,6 +47,9 @@ export default {
         type: 'changeLoading',
         payload: false,
       });
+    },
+    *downloadFile({ payload }, { call }) {
+      yield call(downloadFile, payload);
     },
   },
 

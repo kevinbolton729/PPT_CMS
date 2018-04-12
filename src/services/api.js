@@ -253,3 +253,8 @@ export async function getAdverLists(params = {}) {
     params,
   });
 }
+
+// 下载
+export async function downloadFile(params = {}) {
+  return request(`${API_DOMAIN}/api/server/download/${params.id}`);
+}
