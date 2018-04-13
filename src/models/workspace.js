@@ -1,8 +1,8 @@
-// import { message as openMessage } from 'antd';
+import { message as openMessage } from 'antd';
 import { getSiteNums, getArticleNums, getArticleTodayNums, downloadFile } from '@/services/api';
 import { parseResponse } from '@/utils/parse';
 // 常量
-// import { PAGELOGIN } from '@/utils/consts';
+import { API_DOMAIN } from '@/utils/consts';
 // 方法
 import { noToken } from '@/utils/fns';
 
@@ -50,7 +50,19 @@ export default {
     },
     *downloadFile({ payload }, { call }) {
       const response = yield call(downloadFile, payload);
-      console.log(response, 'response');
+      // console.log(response, 'response');
+      const { type } = response;
+      if (type === 'application/octet-stream') {
+        // 非IE下载
+        const alink = document.createElement('a');
+        alink.style.display = 'none';
+        alink.href = `${API_DOMAIN}/api/server/download/${payload.id}`;
+        document.body.appendChild(alink);
+        alink.click();
+        document.body.removeChild(alink);
+      } else {
+        yield openMessage.warn('下载失败');
+      }
     },
   },
 
