@@ -53,7 +53,7 @@ function fetch(url, options) {
       method: options.method || 'GET',
       headers: options.headers || {},
       withCredentials,
-      responseType: 'json',
+      responseType: options.responseType || 'json',
     })
       .then((response) => {
         checkStatus(response, resolve);

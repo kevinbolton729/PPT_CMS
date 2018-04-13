@@ -49,7 +49,8 @@ export default {
       });
     },
     *downloadFile({ payload }, { call }) {
-      yield call(downloadFile, payload);
+      const response = yield call(downloadFile, payload);
+      console.log(response, 'response');
     },
   },
 

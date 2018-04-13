@@ -256,5 +256,7 @@ export async function getAdverLists(params = {}) {
 
 // 下载
 export async function downloadFile(params = {}) {
-  return request(`${API_DOMAIN}/api/server/download/${params.id}`);
+  return request(`${API_DOMAIN}/api/server/getfile/${params.id}`, {
+    responseType: 'blob',
+  });
 }
