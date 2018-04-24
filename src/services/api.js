@@ -16,6 +16,13 @@ export async function fakeAccountLogin(params) {
     body: { username, password },
   });
 }
+// 安全退出 accountLoginOut
+export async function accountLoginOut(params = {}) {
+  return request(`${API_DOMAIN}/api/server/loginout`, {
+    method: 'POST',
+    body: params,
+  });
+}
 // 注册
 export async function fakeRegister(params = {}) {
   return request(`${API_DOMAIN}/api/server/register`, {

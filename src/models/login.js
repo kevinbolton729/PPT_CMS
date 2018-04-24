@@ -1,6 +1,6 @@
 import { routerRedux } from 'dva/router';
 import { message as openMessage } from 'antd';
-import { fakeAccountLogin } from '@/services/api';
+import { fakeAccountLogin, accountLoginOut } from '@/services/api';
 import { setAuthority } from '@/utils/authority';
 import { reloadAuthorized } from '@/utils/Authorized';
 import { parseResponse } from '@/utils/parse';
@@ -8,11 +8,12 @@ import { parseResponse } from '@/utils/parse';
 // 常量
 import {
   MESSAGE_LOGINON_SUCCESS,
-  MESSAGE_LOGINOUT_SUCCESS,
+  PAGELOGIN,
+  // MESSAGE_LOGINOUT_SUCCESS,
   // LOCALSTORAGENAME,
 } from '@/utils/consts';
 // 方法
-import { delToken } from '@/utils/fns';
+// import { delToken } from '@/utils/fns';
 
 export default {
   namespace: 'login',
@@ -44,6 +45,8 @@ export default {
       }
     },
     *logout(_, { put, call, select }) {
+      const response = yield call(accountLoginOut);
+      const { status, message } = yield call(parseResponse, response);
       try {
         // get location pathname
         const urlParams = new URL(window.location.href);
@@ -52,16 +55,22 @@ export default {
         urlParams.searchParams.set('redirect', pathname);
         window.history.replaceState(null, 'login', urlParams.href);
       } finally {
-        yield put({
-          type: 'changeLoginStatus',
-          payload: {
-            status: false,
-            currentAuthority: 'guest',
-          },
-        });
-        reloadAuthorized();
-        yield openMessage.success(MESSAGE_LOGINOUT_SUCCESS);
-        yield call(delToken, { put }); // 删除Token
+        // LoginOut successfully
+        if (status > 0) {
+          yield put({
+            type: 'changeLoginStatus',
+            payload: {
+              status: false,
+              currentAuthority: 'guest',
+            },
+          });
+          reloadAuthorized();
+          // yield openMessage.success(MESSAGE_LOGINOUT_SUCCESS);
+          yield openMessage.success(message);
+          yield put(routerRedux.push(PAGELOGIN));
+        } else {
+          yield openMessage.error(message);
+        }
       }
     },
   },
