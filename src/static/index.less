@@ -1,3 +1,5 @@
+@import "~antd/lib/style/themes/default.less";
+
 html,
 body,
 :global(#root) {
@@ -13,6 +15,11 @@ body,
 :global(.primaryTheme),
 :global(.uploadSuccess) {
   color: @primary-theme;
+}
+:global(.componentBackground) {
+  margin: -24px -32px 0 -32px;
+  padding: 16px 32px 16px 32px;
+  background: @component-background;
 }
 
 canvas {

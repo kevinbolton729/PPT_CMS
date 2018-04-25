@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Divider, Button, Row, Col, Table, Form, Upload, Icon, Input, Checkbox, Radio } from 'antd';
-import PageHeaderLayout from '@/layouts/PageHeaderLayout';
 import moment from 'moment';
 // 组件
+import BreadCrumb from '@/components/BreadCrumb';
 import ReactQuill from 'react-quill'; // 富文本编辑器
 import { options as quillOptions } from '@/utils/quillOptions';
 import { openModal, openConfirm } from '@/components/Modal';
@@ -651,7 +651,9 @@ class AllArticle extends PureComponent {
             footer: null,
           },
         ])}
-        <PageHeaderLayout />
+        <div className="componentBackground">
+          <BreadCrumb />
+        </div>
         <DetailHandler filterData={this.filterData} resetData={this.resetData.bind(this, true)} />
         <Divider />
         <div>

@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Row, Col, Card, Icon, Upload, Divider, Button, Form, Input } from 'antd';
-import PageHeaderLayout from '@/layouts/PageHeaderLayout';
 // import moment from 'moment';
 // 组件
+import BreadCrumb from '@/components/BreadCrumb';
 import { openModal } from '@/components/Modal';
 // 常量
 import {
@@ -246,7 +246,9 @@ class Adver extends PureComponent {
             footer: null,
           },
         ])}
-        <PageHeaderLayout />
+        <div className="componentBackground">
+          <BreadCrumb />
+        </div>
         <div style={{ marginTop: '24px' }}>
           <Row>
             {data.reduce((arr, current) => {

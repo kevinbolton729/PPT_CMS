@@ -1,9 +1,10 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Divider, Tag, Table } from 'antd';
-import PageHeaderLayout from '@/layouts/PageHeaderLayout';
 import moment from 'moment';
 // 组件
+// import PageHeaderLayout from '@/layouts/PageHeaderLayout';
+import BreadCrumb from '@/components/BreadCrumb';
 import DetailHandler from '@/components/Handler/DetailHandler';
 // 样式
 // import styles from './Channels.less';
@@ -132,7 +133,9 @@ class AllApply extends PureComponent {
     const { loading, data } = this.props;
     return (
       <div>
-        <PageHeaderLayout />
+        <div className="componentBackground">
+          <BreadCrumb />
+        </div>
         <DetailHandler filterData={this.filterData} resetData={this.resetData} />
         <Divider />
         <div style={{ marginTop: '24px' }}>

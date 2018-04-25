@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Divider, Button, Row, Col, Table, Form, Input, InputNumber, Upload, Icon } from 'antd';
-import PageHeaderLayout from '@/layouts/PageHeaderLayout';
 import moment from 'moment';
 // 组件
+import BreadCrumb from '@/components/BreadCrumb';
 import { openModal, openConfirm } from '@/components/Modal';
 import DetailHandler from '@/components/Handler/DetailHandler';
 // 样式
@@ -452,7 +452,9 @@ class AllShop extends PureComponent {
             footer: null,
           },
         ])}
-        <PageHeaderLayout />
+        <div className="componentBackground">
+          <BreadCrumb />
+        </div>
         <DetailHandler filterData={this.filterData} resetData={this.resetData} />
         <Divider />
         <div>
