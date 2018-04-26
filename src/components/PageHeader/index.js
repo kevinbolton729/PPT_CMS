@@ -42,7 +42,7 @@ export default class PageHeader extends PureComponent {
 
     return (
       <div className={clsString}>
-        <div style={{ marginBottom: '16px' }}>
+        <div className={styles.breadcrumb}>
           <BreadCrumb />
         </div>
         <div className={styles.detail}>
