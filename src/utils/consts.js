@@ -15,8 +15,8 @@ export const SECRETKEY_USER = 'SECRETKEY-BOLTON';
 // 生产环境
 export const URL_PREFIX = 'http://39.108.178.198:7001/public';
 export const API_DOMAIN = 'http://39.108.178.198:7001';
-export const LOGO_USER = '../images/logo.png';
-export const LOGO_PAGE = '../images/mainLogo.png';
+export const LOGO_USER = '/images/logo.png';
+export const LOGO_PAGE = '/images/mainLogo.png';
 // Login/GlobalFooter 提示信息
 export const SYS_INFO = '内容管理系统 CMS ADMIN Vol 1.0';
 export const BROWSER_INFO = '推荐使用360极速/Chrome/火狐等现代浏览器';
