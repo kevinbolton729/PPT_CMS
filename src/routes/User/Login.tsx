@@ -2,14 +2,14 @@ import { Alert, Checkbox, Icon } from 'antd';
 import { connect } from 'dva';
 import { Link } from 'dva/router';
 import * as React from 'react';
-// 组件库
+// 组件
 import Login from '../../components/Login';
 // 声明
 import { IProps, IStates } from './';
 
 // 样式
 const styles = require('./Login.less');
-// 组件
+// Ant UI
 const { Tab, UserName, Password, Mobile, Captcha, Submit } = Login;
 
 @connect(({ login, loading }: any) => ({

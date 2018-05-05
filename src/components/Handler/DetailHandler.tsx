@@ -2,45 +2,46 @@
  * @Author: Kevin Bolton
  * @Date: 2018-01-03 23:18:25
  * @Last Modified by: Kevin Bolton
- * @Last Modified time: 2018-03-01 13:05:15
+ * @Last Modified time: 2018-05-05 21:45:29
  */
 
-import React, { PureComponent } from 'react';
-import { DatePicker, Input, message, Button, Form } from 'antd';
+import { Button, DatePicker, Form, Input, message } from 'antd';
 import PropTypes from 'prop-types';
-// import moment from 'moment';
+import * as React from 'react';
 // 常量
-import { MESSAGE_NOINPUT } from '@/utils/consts';
+import { MESSAGE_NOINPUT } from '../../utils/consts';
+// 声明
+import { IProps, IStates } from './';
+
 // 样式
-import styles from './DetailHandler.less';
+const styles = require('./DetailHandler.less');
 
 const { RangePicker } = DatePicker;
 const { Search } = Input;
 
-class DetailHandler extends PureComponent {
+const dateFormat = {
+  dately: 'YYYY年MM月DD日',
+};
+
+class DetailHandler extends React.PureComponent<IProps, IStates> {
   static contextTypes = {
     dispatch: PropTypes.func,
   };
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
-
-    this.dateFormat = {
-      dately: 'YYYY年MM月DD日',
-    };
   }
 
   // select date
-  onChange = (dates, dateStrings) => {
-    const { filterData } = this.props;
+  onChange = (dates: any, dateStrings: any) => {
     console.log(dates, 'dates');
     console.log(dateStrings, 'dateStrings');
     if (dateStrings[0] !== '' || dateStrings[1] !== '') {
-      filterData(`SELECTDATE,${dates[0]},${dates[1]}`);
+      this.props.filterData(`SELECTDATE,${dates[0]},${dates[1]}`);
     }
   };
   // search
-  getSearch = (value) => {
+  getSearch = (value: any) => {
     const { filterData } = this.props;
     if (!value) {
       message.warning(MESSAGE_NOINPUT);
@@ -49,9 +50,9 @@ class DetailHandler extends PureComponent {
       filterData(value);
     }
   };
-  enterSearch = (e) => {
-    e.preventDefault();
-    const { value } = e.target;
+  enterSearch = (event: any) => {
+    event.preventDefault();
+    const { value } = event.target;
     this.getSearch(value);
   };
   // reset search
@@ -68,7 +69,7 @@ class DetailHandler extends PureComponent {
   };
 
   render() {
-    const { dately } = this.dateFormat;
+    const { dately } = dateFormat;
     const { form } = this.props;
     const { getFieldDecorator } = form;
 
@@ -78,7 +79,7 @@ class DetailHandler extends PureComponent {
           <div className={styles.item}>
             {getFieldDecorator('search')(
               <Search
-                enterButton
+                enterButton={true}
                 style={{ width: 300 }}
                 placeholder="关键字"
                 onSearch={this.getSearch}
@@ -100,4 +101,4 @@ class DetailHandler extends PureComponent {
   }
 }
 
-export default Form.create()(DetailHandler);
+export default Form.create()(DetailHandler) as any;

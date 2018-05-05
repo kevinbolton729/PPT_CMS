@@ -1,17 +1,23 @@
-import React, { PureComponent } from 'react';
+import { Avatar, Button, Card, Col, Row } from 'antd';
 import { connect } from 'dva';
-import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Row, Col, Avatar, Card, Button } from 'antd';
+import PropTypes from 'prop-types';
+import * as React from 'react';
 // 组件
-import PageHeaderLayout from '@/layouts/PageHeaderLayout';
-
+import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 // 常量 API_DOMAIN
-import { URL_PREFIX, ROLE_NAME } from '@/utils/consts';
+import { ROLE_NAME, URL_PREFIX } from '../../utils/consts';
+// 声明
+import { IProps, IStates } from './';
 
-import styles from './WorkSpace.less';
+// 样式
+const styles = require('./WorkSpace.less');
 
-class WorkSpace extends PureComponent {
+@connect(({ workspace }: any) => ({
+  loading: workspace.loading,
+  lists: workspace.lists,
+}))
+class WorkSpace extends React.PureComponent<IProps, IStates> {
   static contextTypes = {
     currentUser: PropTypes.object,
   };
@@ -112,7 +118,4 @@ class WorkSpace extends PureComponent {
   }
 }
 
-export default connect(({ workspace }) => ({
-  loading: workspace.loading,
-  lists: workspace.lists,
-}))(WorkSpace);
+export default WorkSpace;

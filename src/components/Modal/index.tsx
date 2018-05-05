@@ -2,17 +2,20 @@
  * @Author: Kevin Bolton
  * @Date: 2018-01-05 15:10:05
  * @Last Modified by: Kevin Bolton
- * @Last Modified time: 2018-02-13 18:42:56
+ * @Last Modified time: 2018-05-05 20:39:24
  */
-import React from 'react';
 import { Modal } from 'antd';
+import * as React from 'react';
+
+// 声明
+import { ConfirmOptions, ModalOptions } from './modal';
 
 const { confirm } = Modal;
 
 /**
  * @description 封装Confirm
  * @author Kevin Bolton
- * @param {any} [options={}]
+ * @param {ConfirmOptions} [options={}]
  * @api
  * {title}: string [默认: 确认操作] 标题,
  * {content}: string [默认: 是否继续本次操作？] 内容,
@@ -23,23 +26,23 @@ const { confirm } = Modal;
  * {onOk}: function 点击确认,
  * {onCancel}: function 点击取消,
  */
-export function openConfirm(options = {}) {
+export function openConfirm(options: ConfirmOptions<string> = {}) {
   const instance = confirm({
     title: options.title || '确认操作',
     content: options.content || '是否继续本次操作？',
     iconType: options.iconType || 'exclamation-circle',
-    maskClosable: Boolean(options.maskClosable),
+    maskClosable: options.maskClosable,
     okType: 'primary',
     okText: options.okText || '确定',
     cancelText: options.cancelText || '取消',
     onOk() {
-      console.log('Clicked ok button');
+      // console.log('Clicked ok button');
       if (options.onOk) {
         options.onOk();
       }
     },
     onCancel() {
-      console.log('Clicked cancel button');
+      // console.log('Clicked cancel button');
       if (options.onCancel) {
         options.onCancel();
       }
@@ -55,7 +58,7 @@ export function openConfirm(options = {}) {
  *     confirmLoading: false, // 可选
  *   };
  * @author Kevin Bolton
- * @param {any} [options={}]
+ * @param {ModalOptions} [options={}]
  * @returns {ReactNoade|HTML}
  * @api
  * {title}: string [默认: 确认操作] 标题,
@@ -72,12 +75,12 @@ export function openConfirm(options = {}) {
  * {content}: string|number 内容,
  * {children}: ReactNode|Html 子元素 当传入children时，content无效,
  */
-export function openModal(options = {}) {
+export function openModal(this: React.Component, options: ModalOptions<string, boolean> = {}) {
   const newOptions = options;
 
   if (!newOptions.handleOk) {
     newOptions.handleOk = () => {
-      console.log('Clicked ok button');
+      // console.log('Clicked ok button');
       this.setState({
         visible: false,
       });
@@ -85,7 +88,7 @@ export function openModal(options = {}) {
   }
   if (!newOptions.handleCancel) {
     newOptions.handleCancel = () => {
-      console.log('Clicked cancel button');
+      // console.log('Clicked cancel button');
       this.setState({
         visible: false,
       });
@@ -97,13 +100,13 @@ export function openModal(options = {}) {
 
   return (
     <Modal
-      destroyOnClose
+      destroyOnClose={true}
       title={newOptions.title || '确认操作'}
       width={newOptions.width || 520}
       visible={newOptions.visible}
       confirmLoading={newOptions.confirmLoading}
-      closable={Boolean(newOptions.closable)}
-      maskClosable={Boolean(newOptions.maskClosable)}
+      closable={newOptions.closable}
+      maskClosable={newOptions.maskClosable}
       okText={newOptions.okText || '确定'}
       cancelText={newOptions.cancelText || '取消'}
       onOk={newOptions.handleOk}
