@@ -1,43 +1,52 @@
-import React, { PureComponent } from 'react';
+import { Button, Card, Col, Divider, Form, Icon, Input, Row, Upload } from 'antd';
 import { connect } from 'dva';
-import { Row, Col, Card, Icon, Upload, Divider, Button, Form, Input } from 'antd';
+import * as React from 'react';
 // import moment from 'moment';
 // 组件
-import BreadCrumb from '@/components/BreadCrumb';
-import { openModal } from '@/components/Modal';
+import BreadCrumb from '../../components/BreadCrumb';
+import { openModal } from '../../components/Modal';
 // 常量
 import {
   API_DOMAIN,
-  URL_PREFIX,
-  BTN_SAVE,
   BTN_RESET,
-  MODEL_ADDEDIT_TITLE,
-  MODEL_ADDEDIT_DESCRIPTION,
-  MODEL_WIDTH_EDIT,
-  IMAGE_NOTITLE,
+  BTN_SAVE,
   IMAGE_NODESCRIPTION,
-} from '@/utils/consts';
+  IMAGE_NOTITLE,
+  MODEL_ADDEDIT_DESCRIPTION,
+  MODEL_ADDEDIT_TITLE,
+  MODEL_WIDTH_EDIT,
+  URL_PREFIX,
+} from '../../utils/consts';
 // 方法
-import { beforeUpload } from '@/utils/fns';
+import { beforeUpload } from '../../utils/fns';
+// 声明
+import { ISildeProps as IProps, ISildeStates as IStates } from './';
+
 // 样式
-import styles from './Sildes.less';
+const styles = require('./Sildes.less');
 
-const { Meta } = Card;
-const FormItem = Form.Item;
-const { TextArea } = Input;
+const { Meta }: any = Card;
+const { TextArea }: any = Input;
 
-class SildeShow extends PureComponent {
-  constructor(props) {
+// 表格 列表项 数据
+let recordData: any = {};
+
+let clickedUpload = '';
+
+@connect(({ silde }: any) => ({
+  loading: silde.loading,
+  originalData: silde.originalData,
+  data: silde.data,
+  uploading: silde.uploading,
+  confirmLoading: silde.confirmLoading,
+}))
+class SildeShow extends React.PureComponent<IProps, IStates> {
+  constructor(props: any) {
     super(props);
 
     this.state = {
       visible: false,
     };
-
-    // 列表项数据
-    this.recordData = {};
-
-    this.clickedUpload = '';
   }
   componentWillMount() {
     const { dispatch } = this.props;
@@ -46,28 +55,28 @@ class SildeShow extends PureComponent {
     });
   }
 
-  clicked = (id) => {
-    this.clickedUpload = id;
-    // console.log(this.clickedUpload, 'clickedUpload');
+  clicked = (id: any) => {
+    clickedUpload = id;
+    // console.log(clickedUpload, 'clickedUpload');
   };
   // submit
-  handleSubmit = (event) => {
+  handleSubmit = (event: any) => {
     // console.log('submit');
     event.preventDefault();
 
     if (!this.props.confirmLoading) {
-      this.props.form.validateFields({ force: true }, (err, values) => {
+      this.props.form.validateFields({ force: true }, (err: any, values: any) => {
         const { dispatch } = this.props;
         if (!err) {
           // console.log(values, 'values');
           // 传递给api
-          const passApiFormData = {
+          const passApiFormData: any = {
             title: values.title,
             description: values.description,
-            url: this.recordData.url || '',
+            url: recordData.url || '',
             topath: values.topath,
           };
-          passApiFormData.id = this.recordData.id;
+          passApiFormData.id = recordData.id;
           // console.log(passApiFormData, 'passApiFormData');
           // 编辑轮播图片
           dispatch({
@@ -111,13 +120,13 @@ class SildeShow extends PureComponent {
   };
 
   // 自定义上传 栏目
-  uploadSilde = (event) => {
+  uploadSilde = (event: any) => {
     const { dispatch } = this.props;
     const { file, filename } = event;
     const formData = new FormData(); // 创建form对象
 
     formData.append(filename, file, file.name);
-    formData.append('weight', this.clickedUpload);
+    formData.append('weight', clickedUpload);
 
     dispatch({
       type: 'silde/uploadSilde',
@@ -129,7 +138,7 @@ class SildeShow extends PureComponent {
   //   const { uploading, uploadImage } = this.props;
 
   //   if (uploading === 'done' || uploading === 'error') {
-  //     const sort = `url${this.clickedUpload}`;
+  //     const sort = `url${clickedUpload}`;
   //     this.setState({
   //       [sort]: uploadImage,
   //     });
@@ -141,7 +150,7 @@ class SildeShow extends PureComponent {
   // 编辑
   handlerEdit = (record = {}) => {
     // console.log('编辑');
-    this.recordData = { ...record };
+    recordData = { ...record };
     this.showModal();
   };
 
@@ -156,9 +165,9 @@ class SildeShow extends PureComponent {
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Col span={12}>
-              <FormItem label="标题">
+              <Form.Item label="标题">
                 {getFieldDecorator('title', {
-                  initialValue: this.recordData.title || '',
+                  initialValue: recordData.title || '',
                   rules: [
                     {
                       required: true,
@@ -166,12 +175,12 @@ class SildeShow extends PureComponent {
                     },
                   ],
                 })(<Input size="large" style={{ width: '96%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={12}>
-              <FormItem label="跳转地址">
+              <Form.Item label="跳转地址">
                 {getFieldDecorator('topath', {
-                  initialValue: this.recordData.topath || '',
+                  initialValue: recordData.topath || '',
                   rules: [
                     {
                       required: true,
@@ -179,14 +188,14 @@ class SildeShow extends PureComponent {
                     },
                   ],
                 })(<Input addonBefore="Http://" size="large" style={{ width: '100%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
           <Row>
             <Col span={24}>
-              <FormItem label="描述">
+              <Form.Item label="描述">
                 {getFieldDecorator('description', {
-                  initialValue: this.recordData.description || '',
+                  initialValue: recordData.description || '',
                   rules: [
                     {
                       required: true,
@@ -194,10 +203,10 @@ class SildeShow extends PureComponent {
                     },
                   ],
                 })(<TextArea size="large" rows={4} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
-          <FormItem>
+          <Form.Item>
             <div style={{ marginTop: '-24px' }}>
               <Divider>
                 <span className="dividerFont">编辑轮播图片</span>
@@ -208,7 +217,7 @@ class SildeShow extends PureComponent {
                 {BTN_SAVE}
               </Button>
             </div>
-          </FormItem>
+          </Form.Item>
         </Form>
       </div>
     );
@@ -248,8 +257,13 @@ class SildeShow extends PureComponent {
                         )
                       }
                       actions={[
-                        <Icon type="edit" onClick={this.handlerEdit.bind(this, current)} />,
+                        <Icon
+                          key="edit"
+                          type="edit"
+                          onClick={this.handlerEdit.bind(this, current)}
+                        />,
                         <Upload
+                          key="upload"
                           name="sildeShow"
                           showUploadList={false}
                           action={`${API_DOMAIN}/api/server/upload/sildeimages`}
@@ -338,10 +352,4 @@ class SildeShow extends PureComponent {
   }
 }
 
-export default connect(({ silde }) => ({
-  loading: silde.loading,
-  originalData: silde.originalData,
-  data: silde.data,
-  uploading: silde.uploading,
-  confirmLoading: silde.confirmLoading,
-}))(Form.create()(SildeShow));
+export default Form.create()(SildeShow) as any;

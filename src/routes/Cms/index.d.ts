@@ -35,13 +35,18 @@ export interface IArticleStates {
 }
 
 export interface IChannelProps {
+  location: any;
   dispatch: Dispatch;
   loading: boolean;
   confirmLoading: boolean;
   uploading: any;
   originalData: any[];
   data: any[];
+  sitetypes: any[];
+  channeltypes: any[];
   form: any;
+  uploadImage: any;
+  currentSiteid: any;
 }
 export interface IChannelStates {
   visible: boolean;

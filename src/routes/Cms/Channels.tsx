@@ -1,110 +1,93 @@
-import React, { PureComponent } from 'react';
+import { Button, Checkbox, Col, Divider, Form, Icon, Input, Row, Table, Upload } from 'antd';
 import { connect } from 'dva';
-import { Divider, Button, Row, Col, Table, Form, Upload, Icon, Input, Checkbox } from 'antd';
 import moment from 'moment';
+import * as React from 'react';
 // 组件
-import BreadCrumb from '@/components/BreadCrumb';
-import { openModal, openConfirm } from '@/components/Modal';
-import DetailHandler from '@/components/Handler/DetailHandler';
-// 样式
-// import styles from './Channels.less';
+import BreadCrumb from '../../components/BreadCrumb';
+import DetailHandler from '../../components/Handler/DetailHandler';
+import { openConfirm, openModal } from '../../components/Modal';
 // 常量
 import {
-  LINK_SHOP_ID,
   API_DOMAIN,
-  URL_PREFIX,
-  BTN_SAVE,
   BTN_CANCEL,
   BTN_RESET,
-  MODEL_DEL_TITLE,
-  MODEL_DEL_DESCRIPTION,
-  MODEL_DEL_BTN_OK,
-  MODEL_ADDEDIT_TITLE,
+  BTN_SAVE,
+  LINK_SHOP_ID,
   MODEL_ADDEDIT_DESCRIPTION,
+  MODEL_ADDEDIT_TITLE,
+  MODEL_DEL_BTN_OK,
+  MODEL_DEL_DESCRIPTION,
+  MODEL_DEL_TITLE,
   MODEL_WIDTH_EDIT,
-} from '@/utils/consts';
+  URL_PREFIX,
+} from '../../utils/consts';
 // 方法
-import { strToUpper, getMapTypeName, getMapStrName, beforeUpload } from '@/utils/fns';
+import { beforeUpload, getMapStrName, getMapTypeName, strToUpper } from '../../utils/fns';
+// 声明
+import { IChannelProps as IProps, IChannelStates as IStates } from './';
 
-const FormItem = Form.Item;
-const { TextArea } = Input;
-const CheckboxGroup = Checkbox.Group;
+// 样式
+// const styles = require('./Channels.less');
+const { TextArea }: any = Input;
 
-class SetChannel extends PureComponent {
-  constructor(props) {
-    super(props);
-    const { sitetypes } = props;
+let handleStatus = 0; // 0:添加 1:编辑
 
-    this.state = {
-      visible: false,
-    };
-
-    this.handleStatus = 0; // 0:添加 1:编辑
-
-    // 列表项数据
-    this.recordData = {};
-
-    // 传入Modal的site data
-    this.passSites = props.sitetypes.map(item => ({
-      label: item.name,
-      value: item.siteid,
-    }));
-
-    this.columns = [
-      {
-        title: '栏目名称',
-        dataIndex: 'name',
-        key: 'name',
-        width: 150,
-        render: text => <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{text}</span>,
-      },
-      {
-        title: '栏目介绍',
-        dataIndex: 'text',
-        key: 'text',
-        width: 300,
-        render: text => <span style={{ color: '#999' }}>{text}</span>,
-      },
-      {
-        title: '所属站点',
-        dataIndex: 'siteid',
-        key: 'siteid',
-        render: text => getMapTypeName(text.split(','), sitetypes),
-      },
-      {
-        title: '更新日期',
-        dataIndex: 'updateDate',
-        key: 'updateDate',
-        width: 300,
-        render: (text, record) => (
-          <span>
-            {`${moment(parseInt(record.updateDate, 10)).format('YYYY年MM月DD日 HH:mm:ss')}`}
-          </span>
-        ),
-      },
-      {
-        title: '操作',
-        dataIndex: 'action',
-        key: 'action',
-        width: 220,
-        render: (text, record) => {
-          return (
-            <div>
-              <Button onClick={this.handlerEdit.bind(this, record)}>编辑</Button>
-              {(record.channelid === '5a9f87cdd2467c1d20c8ca64' ||
-                record.channelid === '5a9f87e1d2467c1d20c8ca65') && (
-                <div style={{ display: 'inline' }}>
-                  <Divider type="vertical" />
-                  <Button
-                    onClick={this.handlerSelect.bind(this, record.channelid)}
-                    style={{ marginTop: '12px' }}
-                    type="primary"
-                  >
-                    进入栏目
-                  </Button>
-                </div>
-              )}
-              {/* <Divider type="vertical" />
+// 表格 列表项 数据
+let recordData: any = {};
+// 表格 列表项
+let columns = (fn: any, props: any) => [
+  {
+    title: '栏目名称',
+    dataIndex: 'name',
+    key: 'name',
+    width: 150,
+    render: (text: any) => <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{text}</span>,
+  },
+  {
+    title: '栏目介绍',
+    dataIndex: 'text',
+    key: 'text',
+    width: 300,
+    render: (text: any) => <span style={{ color: '#999' }}>{text}</span>,
+  },
+  {
+    title: '所属站点',
+    dataIndex: 'siteid',
+    key: 'siteid',
+    render: (text: any) => getMapTypeName(text.split(','), props.sitetypes),
+  },
+  {
+    title: '更新日期',
+    dataIndex: 'updateDate',
+    key: 'updateDate',
+    width: 300,
+    render: (text: any, record: any) => (
+      <span>{`${moment(parseInt(record.updateDate, 10)).format('YYYY年MM月DD日 HH:mm:ss')}`}</span>
+    ),
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    key: 'action',
+    width: 220,
+    render: (text: any, record: any) => {
+      return (
+        <div>
+          <Button onClick={fn.handlerEdit.bind(null, record)}>编辑</Button>
+          {(record.channelid === '5a9f87cdd2467c1d20c8ca64' ||
+            record.channelid === '5a9f87e1d2467c1d20c8ca65') && (
+            <div style={{ display: 'inline' }}>
+              <Divider type="vertical" />
+              <Button
+                onClick={fn.handlerSelect.bind(null, record.channelid)}
+                style={{ marginTop: '12px' }}
+                type="primary"
+              >
+                进入栏目
+              </Button>
+            </div>
+          )}
+          {/* <Divider type="vertical" />
               <Button
                 onClick={this.handlerDelete.bind(this, record.channelid)}
                 style={{ marginTop: '12px' }}
@@ -112,11 +95,31 @@ class SetChannel extends PureComponent {
               >
                 删除
               </Button> */}
-            </div>
-          );
-        },
-      },
-    ];
+        </div>
+      );
+    },
+  },
+];
+
+let passSites: any[] = [];
+
+@connect(({ global, channel }: any) => ({
+  currentSiteid: global.currentSiteid,
+  sitetypes: global.sitetypes,
+  loading: channel.loading,
+  uploading: channel.uploading,
+  uploadImage: channel.uploadImage,
+  confirmLoading: channel.confirmLoading,
+  originalData: channel.originalData,
+  data: channel.data,
+}))
+class SetChannel extends React.PureComponent<IProps, IStates> {
+  constructor(props: any) {
+    super(props);
+
+    this.state = {
+      visible: false,
+    };
   }
 
   componentWillMount() {
@@ -125,18 +128,29 @@ class SetChannel extends PureComponent {
       type: 'channel/queryChanneLists',
     });
   }
+  componentDidMount() {
+    const { sitetypes } = this.props;
+    // 传入Modal的site data
+    passSites = sitetypes
+      .map((item: any, index: any) => ({
+        key: `site${index}`,
+        label: item.name,
+        value: item.siteid,
+      }))
+      .filter((item: any) => item.label);
+  }
   componentDidUpdate() {
     // 上传完成/成功时
     this.uploadFinished();
   }
 
   // Pagination
-  onShowSizeChange = (current, pageSize) => {
+  onShowSizeChange = (current: number, pageSize: number) => {
     console.log(current, pageSize);
   };
 
   // filter data
-  filterData = (key) => {
+  filterData = (key: string) => {
     if (key.indexOf('SELECTDATE') !== -1) {
       const newKey = key.slice('SELECTDATE'.length + 1);
       // console.log(newKey, 'newKey');
@@ -145,7 +159,7 @@ class SetChannel extends PureComponent {
     }
     const newKey = key.toString().toUpperCase();
     const { dispatch, data, sitetypes } = this.props;
-    const result = data.filter((item) => {
+    const result = data.filter(item => {
       const arrs = getMapStrName(item.siteid.split(','), sitetypes);
       return (
         arrs.some(arr => strToUpper(arr).indexOf(newKey) !== -1) ||
@@ -160,12 +174,12 @@ class SetChannel extends PureComponent {
   };
 
   // filter date 日期
-  filterSelectDate = (key) => {
+  filterSelectDate = (key: string) => {
     const arr = key.split(',');
     const start = moment(arr[0]).valueOf();
     const end = moment(arr[1]).valueOf();
     const { dispatch, data } = this.props;
-    const result = data.filter((item) => {
+    const result = data.filter(item => {
       const select = parseInt(item.updateDate, 10);
       return select >= start && select <= end;
     });
@@ -189,19 +203,19 @@ class SetChannel extends PureComponent {
   // 添加
   handlerAdd = () => {
     console.log('添加');
-    this.handleStatus = 0;
-    this.recordData = {};
+    handleStatus = 0;
+    recordData = {};
     this.showModal();
   };
   // 编辑
   handlerEdit = (record = {}) => {
     console.log('编辑');
-    this.handleStatus = 1;
-    this.recordData = { ...record };
+    handleStatus = 1;
+    recordData = { ...record };
     this.showModal();
   };
   // 选择进入
-  handlerSelect = (channelid = null) => {
+  handlerSelect = (channelid = '') => {
     if (!channelid) return;
     // console.log(channelid, 'channelid');
     const { dispatch } = this.props;
@@ -235,18 +249,18 @@ class SetChannel extends PureComponent {
     });
   };
   // submit
-  handleSubmit = (e) => {
-    e.preventDefault();
+  handleSubmit = (event: any) => {
+    event.preventDefault();
 
     if (!this.props.confirmLoading) {
-      this.props.form.validateFields({ force: true }, (err, values) => {
+      this.props.form.validateFields({ force: true }, (err: any, values: any) => {
         const { dispatch, uploadImage } = this.props;
         if (!err) {
           // console.log(values, 'values');
           // console.log(values.setHref, 'values.setHref');
           // return;
           // 传递给api
-          const passApiFormData = {
+          const passApiFormData: any = {
             name: values.name,
             text: values.subtitle,
             thumb: uploadImage || '',
@@ -259,7 +273,7 @@ class SetChannel extends PureComponent {
               10
             ),
           };
-          if (!this.handleStatus) {
+          if (!handleStatus) {
             // console.log(passApiFormData, 'passApiFormData');
             // 添加栏目
             dispatch({
@@ -267,7 +281,7 @@ class SetChannel extends PureComponent {
               payload: passApiFormData,
             });
           } else {
-            passApiFormData.channelid = this.recordData.channelid;
+            passApiFormData.channelid = recordData.channelid;
             // console.log(passApiFormData, 'passApiFormData');
             // 编辑栏目
             dispatch({
@@ -311,8 +325,8 @@ class SetChannel extends PureComponent {
       type: 'channel/changeUpLoadImage',
       payload: '',
     });
-    // console.log(this.handleStatus, 'handleStatus');
-    console.log(this.recordData, 'recordData');
+    // console.log(handleStatus, 'handleStatus');
+    console.log(recordData, 'recordData');
   };
   // close Modal
   closeModal = () => {
@@ -320,7 +334,7 @@ class SetChannel extends PureComponent {
   };
 
   // 自定义上传 栏目
-  uploadChannel = (event) => {
+  uploadChannel = (event: any) => {
     const { dispatch } = this.props;
     const { file, filename } = event;
     const formData = new FormData(); // 创建form对象
@@ -352,9 +366,9 @@ class SetChannel extends PureComponent {
       <div style={{ padding: '0 16' }}>
         <Form onSubmit={this.handleSubmit}>
           <Row>
-            {this.recordData.channelid !== LINK_SHOP_ID && (
+            {recordData.channelid !== LINK_SHOP_ID && (
               <Col span={24}>
-                <FormItem label="栏目图片">
+                <Form.Item label="栏目图片">
                   {getFieldDecorator('channelImage')(
                     <Upload
                       name="channelImage"
@@ -379,20 +393,20 @@ class SetChannel extends PureComponent {
                       </Button>
                     </Upload>
                   )}
-                  {(uploadImage || this.recordData.thumb) && (
+                  {(uploadImage || recordData.thumb) && (
                     <img
-                      src={`${URL_PREFIX}${uploadImage || this.recordData.thumb}`}
+                      src={`${URL_PREFIX}${uploadImage || recordData.thumb}`}
                       style={{ maxWidth: '100%', marginTop: '6px', display: 'block' }}
                       alt="栏目图片"
                     />
                   )}
-                </FormItem>
+                </Form.Item>
               </Col>
             )}
             <Col span={24}>
-              <FormItem label="标题">
+              <Form.Item label="标题">
                 {getFieldDecorator('name', {
-                  initialValue: this.recordData.name || '',
+                  initialValue: recordData.name || '',
                   rules: [
                     {
                       required: true,
@@ -400,12 +414,12 @@ class SetChannel extends PureComponent {
                     },
                   ],
                 })(<Input size="large" style={{ width: '100%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={24}>
-              <FormItem label="简介">
+              <Form.Item label="简介">
                 {getFieldDecorator('subtitle', {
-                  initialValue: this.recordData.text || '',
+                  initialValue: recordData.text || '',
                   rules: [
                     {
                       required: true,
@@ -413,45 +427,47 @@ class SetChannel extends PureComponent {
                     },
                   ],
                 })(<TextArea size="large" rows={4} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
-          {this.recordData.channelid === LINK_SHOP_ID && (
+          {recordData.channelid === LINK_SHOP_ID && (
             <Row>
               <Col span={18}>
-                <FormItem label="访问地址">
+                <Form.Item label="访问地址">
                   {getFieldDecorator('href', {
-                    initialValue: this.recordData.href || '',
-                    rules: this.recordData.channelid === LINK_SHOP_ID && [
+                    initialValue: recordData.href || '',
+                    rules: recordData.channelid === LINK_SHOP_ID && [
                       {
                         required: true,
                         message: '请填写访问地址！',
                       },
                     ],
                   })(<Input addonBefore="Http://" size="large" style={{ width: '96%' }} />)}
-                </FormItem>
+                </Form.Item>
               </Col>
               <Col span={6}>
-                <FormItem label="启用地址">
+                <Form.Item label="启用地址">
                   {getFieldDecorator('setHref', {
                     initialValue: ['1'],
-                    rules: this.recordData.channelid === LINK_SHOP_ID && [
+                    rules: recordData.channelid === LINK_SHOP_ID && [
                       {
                         required: true,
                         message: '请选择是否启用！',
                       },
                     ],
-                  })(<CheckboxGroup disabled options={[{ label: '是否启用', value: '1' }]} />)}
-                </FormItem>
+                  })(
+                    <Checkbox.Group disabled={true} options={[{ label: '是否启用', value: '1' }]} />
+                  )}
+                </Form.Item>
               </Col>
             </Row>
           )}
           <Row>
             <Col span={24}>
-              <FormItem label="发布至">
+              <Form.Item label="发布至">
                 {getFieldDecorator('site', {
-                  initialValue: this.recordData.siteid
-                    ? this.recordData.siteid.split(',')
+                  initialValue: recordData.siteid
+                    ? recordData.siteid.split(',')
                     : ['59607e3c682e090ca074ecfd'],
                   rules: [
                     {
@@ -459,11 +475,11 @@ class SetChannel extends PureComponent {
                       message: '请选择将发布至的站点！',
                     },
                   ],
-                })(<CheckboxGroup disabled options={this.passSites} />)}
-              </FormItem>
+                })(<Checkbox.Group disabled={true} options={passSites} />)}
+              </Form.Item>
             </Col>
           </Row>
-          <FormItem>
+          <Form.Item>
             <div style={{ marginTop: '-24px' }}>
               <Divider>
                 <span className="dividerFont">编辑栏目</span>
@@ -474,7 +490,7 @@ class SetChannel extends PureComponent {
                 {BTN_SAVE}
               </Button>
             </div>
-          </FormItem>
+          </Form.Item>
         </Form>
       </div>
     );
@@ -507,7 +523,13 @@ class SetChannel extends PureComponent {
         <div style={{ marginTop: '24px' }}>
           <Table
             rowKey="channelid"
-            columns={this.columns}
+            columns={columns(
+              {
+                handlerEdit: this.handlerEdit,
+                handlerSelect: this.handlerSelect,
+              },
+              this.props
+            )}
             loading={loading}
             dataSource={data}
             // expandedRowRender={record => <p style={{ margin: 0 }}>{`栏目简介: ${record.text}`}</p>}
@@ -527,13 +549,4 @@ class SetChannel extends PureComponent {
   }
 }
 
-export default connect(({ global, channel }) => ({
-  currentSiteid: global.currentSiteid,
-  sitetypes: global.sitetypes,
-  loading: channel.loading,
-  uploading: channel.uploading,
-  uploadImage: channel.uploadImage,
-  confirmLoading: channel.confirmLoading,
-  originalData: channel.originalData,
-  data: channel.data,
-}))(Form.create()(SetChannel));
+export default Form.create()(SetChannel) as any;
