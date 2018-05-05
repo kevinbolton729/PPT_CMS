@@ -2,7 +2,7 @@
  * @Author: Kevin Bolton
  * @Date: 2018-02-05 22:04:50
  * @Last Modified by: Kevin Bolton
- * @Last Modified time: 2018-05-05 19:57:03
+ * @Last Modified time: 2018-05-06 00:29:43
  */
 import { message as openMessage, Tag } from 'antd';
 import { routerRedux } from 'dva/router';
@@ -205,15 +205,7 @@ export const covertBase64toUrl = (params: any) => {
   // console.log(contentOps, 'contentOps');
 
   let n = 0;
-  // for (let i = 0; i < contentOps.length; i += 1) {
-  //   const { image } = contentOps[i].insert;
-  //   if (image && image.indexOf('data:image') !== -1) {
-  //     // console.log(image, 'image');
-  //     contentOps[i].insert.image = URL_PREFIX + data[n].url;
-  //     n += 1;
-  //   }
-  // }
-  for (const i of contentOps) {
+  for (let i = 0; i < contentOps.length; i += 1) {
     const { image } = contentOps[i].insert;
     if (image && image.indexOf('data:image') !== -1) {
       // console.log(image, 'image');

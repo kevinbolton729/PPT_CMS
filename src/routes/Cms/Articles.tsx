@@ -1,42 +1,41 @@
-import React, { PureComponent } from 'react';
+import { Button, Checkbox, Col, Divider, Form, Icon, Input, Radio, Row, Table, Upload } from 'antd';
 import { connect } from 'dva';
-import { Divider, Button, Row, Col, Table, Form, Upload, Icon, Input, Checkbox, Radio } from 'antd';
 import moment from 'moment';
-// 组件
-import BreadCrumb from '@/components/BreadCrumb';
+import * as React from 'react';
 import ReactQuill from 'react-quill'; // 富文本编辑器
-import { options as quillOptions } from '@/utils/quillOptions';
-import { openModal, openConfirm } from '@/components/Modal';
-import DetailHandler from '@/components/Handler/DetailHandler';
-// 样式
-// import styles from './Channels.less';
+// 组件
+import BreadCrumb from '../../components/BreadCrumb';
+import DetailHandler from '../../components/Handler/DetailHandler';
+import { openConfirm, openModal } from '../../components/Modal';
 // 常量
 import {
   API_DOMAIN,
-  URL_PREFIX,
-  BTN_SAVE,
   BTN_CANCEL,
   BTN_RESET,
-  MODEL_DEL_TITLE,
-  MODEL_DEL_DESCRIPTION,
-  MODEL_DEL_BTN_OK,
-  MODEL_ADDEDIT_TITLE,
+  BTN_SAVE,
   MODEL_ADDEDIT_DESCRIPTION,
+  MODEL_ADDEDIT_TITLE,
+  MODEL_DEL_BTN_OK,
+  MODEL_DEL_DESCRIPTION,
+  MODEL_DEL_TITLE,
   MODEL_WIDTH_EDIT,
-} from '@/utils/consts';
+  URL_PREFIX,
+} from '../../utils/consts';
 // 方法
 import {
-  strToUpper,
-  getMapTypeName,
-  getMapStrName,
-  getUploadImgs,
   beforeUpload,
-} from '@/utils/fns';
+  getMapStrName,
+  getMapTypeName,
+  getUploadImgs,
+  strToUpper,
+} from '../../utils/fns';
+import { options as quillOptions } from '../../utils/quillOptions';
+// 声明
+import { IArticleProps as IProps, IArticleStates as IStates } from './';
 
-const FormItem = Form.Item;
-const { TextArea } = Input;
-const CheckboxGroup = Checkbox.Group;
-const RadioGroup = Radio.Group;
+// 样式
+// const styles = require('./Channels.less');
+const { TextArea }: any = Input;
 
 const filterKeyMap = {
   all: -1,
@@ -44,85 +43,89 @@ const filterKeyMap = {
   article: '最新动态',
 };
 
-class AllArticle extends PureComponent {
-  constructor(props) {
+// react-quill 编辑器
+let quillRef: any = null; // Quill instance
+let reactQuillRef: any = null; // ReactQuill component
+
+let handleStatus = 0; // 0:添加 1:编辑
+
+// 传入Modal的channel data
+let noignore: string[] = ['5a9f87cdd2467c1d20c8ca64', '5a9f87e1d2467c1d20c8ca65'];
+
+// 表格 列表项 数据
+let recordData: any = {};
+// 表格 列表项
+let columns = (fn: any, props: any) => [
+  {
+    title: '标题',
+    dataIndex: 'title',
+    key: 'title',
+    render: (text: any) => <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{text}</span>,
+  },
+  {
+    title: '所属栏目',
+    dataIndex: 'channelid',
+    key: 'channelid',
+    render: (text: any) => getMapTypeName(text.split(','), props.channeltypes),
+  },
+  {
+    title: '发布/更新日期',
+    dataIndex: 'updateDate',
+    key: 'updateDate',
+    width: 240,
+    render: (text: any, record: any) => (
+      <span>{`${moment(parseInt(record.updateDate, 10)).format('YYYY年MM月DD日 HH:mm:ss')}`}</span>
+    ),
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    key: 'action',
+    width: 180,
+    render: (text: any, record: any) => {
+      return (
+        <div>
+          <Button onClick={fn.handlerEdit.bind(null, record)}>编辑</Button>
+          <Divider type="vertical" />
+          <Button
+            onClick={fn.handlerDelete.bind(null, record.articleid)}
+            style={{ marginTop: '12px' }}
+            type="primary"
+          >
+            删除
+          </Button>
+        </div>
+      );
+    },
+  },
+];
+
+const expandedRowRender = (record: any) => (
+  <p style={{ margin: 0 }}>{`副标题: ${record.subtitle}`}</p>
+);
+
+// 传入Modal的site data
+let passSites: any[] = [];
+let passChannels: any = [];
+
+@connect(({ global, article }: any) => ({
+  sitetypes: global.sitetypes,
+  channeltypes: global.channeltypes,
+  loading: article.loading,
+  uploading: article.uploading,
+  uploadImage: article.uploadImage,
+  confirmLoading: article.confirmLoading,
+  originalData: article.originalData,
+  data: article.data,
+}))
+class AllArticle extends React.PureComponent<IProps, IStates> {
+  constructor(props: any) {
     super(props);
-    const { channeltypes } = props;
 
     this.state = {
       visible: false,
       filterValue: 'all',
     };
-
-    // react-quill 编辑器
-    this.quillRef = null; // Quill instance
-    this.reactQuillRef = null; // ReactQuill component
-
-    this.handleStatus = 0; // 0:添加 1:编辑
-
-    // 列表项数据
-    this.recordData = {};
-
-    // 传入Modal的site data
-    this.passSites = props.sitetypes.map(item => ({
-      label: item.name,
-      value: item.siteid,
-    }));
-    // 传入Modal的channel data
-    this.noignore = ['5a9f87cdd2467c1d20c8ca64', '5a9f87e1d2467c1d20c8ca65'];
-    this.passChannels = props.channeltypes
-      .map(item => ({
-        label: item.name,
-        value: item.channelid,
-      }))
-      .filter(item => item.value === this.noignore[0] || item.value === this.noignore[1]);
-
-    this.columns = [
-      {
-        title: '标题',
-        dataIndex: 'title',
-        key: 'title',
-        render: text => <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{text}</span>,
-      },
-      {
-        title: '所属栏目',
-        dataIndex: 'channelid',
-        key: 'channelid',
-        render: text => getMapTypeName(text.split(','), channeltypes),
-      },
-      {
-        title: '发布/更新日期',
-        dataIndex: 'updateDate',
-        key: 'updateDate',
-        width: 240,
-        render: (text, record) => (
-          <span>
-            {`${moment(parseInt(record.updateDate, 10)).format('YYYY年MM月DD日 HH:mm:ss')}`}
-          </span>
-        ),
-      },
-      {
-        title: '操作',
-        dataIndex: 'action',
-        key: 'action',
-        width: 180,
-        render: (text, record) => {
-          return (
-            <div>
-              <Button onClick={this.handlerEdit.bind(this, record)}>编辑</Button>
-              <Divider type="vertical" />
-              <Button
-                onClick={this.handlerDelete.bind(this, record.articleid)}
-                style={{ marginTop: '12px' }}
-                type="primary"
-              >
-                删除
-              </Button>
-            </div>
-          );
-        },
-      },
-    ];
   }
 
   componentWillMount() {
@@ -135,30 +138,47 @@ class AllArticle extends PureComponent {
       this.handleOnChange(key);
     }
   }
-
+  componentDidMount() {
+    const { sitetypes, channeltypes } = this.props;
+    // 传入Modal的site data
+    passSites = sitetypes
+      .map((item, index) => ({
+        key: `site${index}`,
+        label: item.name,
+        value: item.siteid,
+      }))
+      .filter(item => item.label);
+    passChannels = channeltypes
+      .map((item, index) => ({
+        key: `channel${index}`,
+        label: item.name,
+        value: item.channelid,
+      }))
+      .filter(item => item.value === noignore[0] || item.value === noignore[1]);
+  }
   componentDidUpdate() {
     // 上传完成/成功时
     this.uploadFinished();
   }
 
   // Pagination
-  onShowSizeChange = (current, pageSize) => {
+  onShowSizeChange = (current: number, pageSize: number) => {
     console.log(current, pageSize);
   };
 
   // react-quill 获取编辑器实例
   attachQuillRefs = () => {
-    // console.log(this.reactQuillRef, 'this.reactQuillRef');
-    if (!this.reactQuillRef) return;
-    if (typeof this.reactQuillRef.getEditor !== 'function') return;
-    this.quillRef = this.reactQuillRef.getEditor();
+    // console.log(reactQuillRef, 'reactQuillRef');
+    if (!reactQuillRef) return;
+    if (typeof reactQuillRef.getEditor !== 'function') return;
+    quillRef = reactQuillRef.getEditor();
   };
   // react-quill 插入内容至编辑器
-  uploadImgs = (handleStatus, passApiData) => {
+  uploadImgs = (handleStatus: any, passApiData: any) => {
     const { dispatch } = this.props;
     // 实例化react-quill
     // this.attachQuillRefs();
-    const content = this.quillRef.getContents();
+    const content = quillRef.getContents();
     // console.log(content, 'content');
     // 获取编辑器内的本地图片
     const uploadLists = getUploadImgs(content.ops);
@@ -179,7 +199,7 @@ class AllArticle extends PureComponent {
   };
 
   // Radio onChange
-  handleOnChange = async (event) => {
+  handleOnChange = async (event: any) => {
     // console.log(event, 'event/key');
     await this.setState({
       filterValue: event.target ? event.target.value : event,
@@ -189,7 +209,7 @@ class AllArticle extends PureComponent {
   };
 
   // filter data
-  filterData = (key) => {
+  filterData = (key: any) => {
     if (key === -1) {
       this.resetData();
       return;
@@ -202,7 +222,7 @@ class AllArticle extends PureComponent {
     }
     const newKey = key.toString().toUpperCase();
     const { dispatch, data, channeltypes } = this.props;
-    const result = data.filter((item) => {
+    const result = data.filter(item => {
       const arrs = getMapStrName(item.channelid.split(','), channeltypes);
       return (
         arrs.some(arr => strToUpper(arr).indexOf(newKey) !== -1) ||
@@ -218,12 +238,12 @@ class AllArticle extends PureComponent {
   };
 
   // filter date 日期
-  filterSelectDate = (key) => {
+  filterSelectDate = (key: string) => {
     const arr = key.split(',');
     const start = moment(arr[0]).valueOf();
     const end = moment(arr[1]).valueOf();
     const { dispatch, data } = this.props;
-    const result = data.filter((item) => {
+    const result = data.filter(item => {
       const select = parseInt(item.updateDate, 10);
       return select >= start && select <= end;
     });
@@ -252,15 +272,15 @@ class AllArticle extends PureComponent {
   // 添加
   handlerAdd = () => {
     console.log('添加');
-    this.handleStatus = 0;
-    this.recordData = {};
+    handleStatus = 0;
+    recordData = {};
     this.showModal();
   };
   // 编辑
   handlerEdit = (record = {}) => {
     console.log('编辑');
-    this.handleStatus = 1;
-    this.recordData = { ...record };
+    handleStatus = 1;
+    recordData = { ...record };
     this.showModal();
   };
   // 删除
@@ -284,8 +304,8 @@ class AllArticle extends PureComponent {
     });
   };
   // submit
-  handleSubmit = (e) => {
-    e.preventDefault();
+  handleSubmit = (event: any) => {
+    event.preventDefault();
     const { confirmLoading, form } = this.props;
 
     if (!confirmLoading) {
@@ -294,14 +314,14 @@ class AllArticle extends PureComponent {
 
       if (quillContent === '<p><br></p>') form.setFieldsValue({ content: '' });
 
-      form.validateFields({ force: true }, (err, values) => {
+      form.validateFields({ force: true }, (err: any, values: any) => {
         const { dispatch, uploadImage } = this.props;
         // console.log(values.channel, 'values.channel');
         // console.log(Boolean(uploadImage));
-        // console.log(Boolean(this.recordData.thumb));
+        // console.log(Boolean(recordData.thumb));
         if (!err) {
           // 传递给api
-          const passApiFormData = {
+          const passApiFormData: any = {
             siteid: values.site.join(','),
             title: values.title,
             subtitle: values.subtitle,
@@ -311,28 +331,28 @@ class AllArticle extends PureComponent {
             content: values.content,
             likenums: values.likenums,
             thumb: uploadImage || '',
-            isUploadThumbed: !!uploadImage || !!this.recordData.thumb,
+            isUploadThumbed: !!uploadImage || !!recordData.thumb,
             productParmas: values.productParmas,
           };
           // 编辑时，添加字段: articleid
-          if (this.handleStatus) passApiFormData.articleid = this.recordData.articleid;
+          if (handleStatus) passApiFormData.articleid = recordData.articleid;
           // react-quill 上传编辑器内图片至文件服务器
-          this.uploadImgs(this.handleStatus, passApiFormData);
+          this.uploadImgs(handleStatus, passApiFormData);
 
           // 关闭Modal
           setTimeout(() => {
             this.closeModal();
           }, 500);
-          // if (!this.handleStatus) {
+          // if (!handleStatus) {
           //   console.log(passApiFormData, 'passApiFormData');
-          //   this.uploadImgs(this.handleStatus);
+          //   this.uploadImgs(handleStatus);
           //   // 添加文章
           //   dispatch({
           //     type: 'article/addArticle',
           //     payload: passApiFormData,
           //   });
           // } else {
-          //   passApiFormData.articleid = this.recordData.articleid;
+          //   passApiFormData.articleid = recordData.articleid;
           //   console.log(passApiFormData, 'passApiFormData');
           //   // 编辑文章
           //   dispatch({
@@ -373,7 +393,7 @@ class AllArticle extends PureComponent {
       payload: '',
     });
     // react-quill 重置内容
-    this.quillRef.setContents(this.recordData.content);
+    quillRef.setContents(recordData.content);
   };
   // show Modal
   showModal = () => {
@@ -389,7 +409,7 @@ class AllArticle extends PureComponent {
     setTimeout(() => {
       // 实例化react-quill
       this.attachQuillRefs();
-      if (this.recordData.content) this.quillRef.setContents(this.recordData.content);
+      if (recordData.content) quillRef.setContents(recordData.content);
     }, 1500);
   };
   // close Modal
@@ -398,7 +418,7 @@ class AllArticle extends PureComponent {
   };
 
   // 自定义上传 缩略图
-  uploadThumb = (event) => {
+  uploadThumb = (event: any) => {
     const { dispatch } = this.props;
     const { file, filename } = event;
     const formData = new FormData(); // 创建form对象
@@ -423,10 +443,10 @@ class AllArticle extends PureComponent {
   };
 
   // Radio选中项变化时
-  changeRadio = (e) => {
-    e.preventDefault();
-    const checked = e.target.value;
-    this.recordData.channelid = checked;
+  changeRadio = (event: any) => {
+    event.preventDefault();
+    const checked = event.target.value;
+    recordData.channelid = checked;
   };
 
   render() {
@@ -437,10 +457,10 @@ class AllArticle extends PureComponent {
       <div style={{ padding: '0 16' }}>
         <Form onSubmit={this.handleSubmit}>
           <Row>
-            {this.recordData.channelid === '5a9f87e1d2467c1d20c8ca65' && (
+            {recordData.channelid === '5a9f87e1d2467c1d20c8ca65' && (
               <Col span={24}>
-                {/* <span>{`${URL_PREFIX}${uploadImage || this.recordData.thumb}`}</span> */}
-                <FormItem label="产品缩略图">
+                {/* <span>{`${URL_PREFIX}${uploadImage || recordData.thumb}`}</span> */}
+                <Form.Item label="产品缩略图">
                   {getFieldDecorator('productThumb')(
                     <Upload
                       name="productThumb"
@@ -465,20 +485,20 @@ class AllArticle extends PureComponent {
                       </Button>
                     </Upload>
                   )}
-                  {(this.recordData.thumb || uploadImage) && (
+                  {(recordData.thumb || uploadImage) && (
                     <img
-                      src={`${URL_PREFIX}${uploadImage || this.recordData.thumb}`}
+                      src={`${URL_PREFIX}${uploadImage || recordData.thumb}`}
                       style={{ maxWidth: '50%', marginTop: '6px', display: 'block' }}
                       alt="缩略图"
                     />
                   )}
-                </FormItem>
+                </Form.Item>
               </Col>
             )}
             <Col span={24}>
-              <FormItem label="标题">
+              <Form.Item label="标题">
                 {getFieldDecorator('title', {
-                  initialValue: this.recordData.title || '',
+                  initialValue: recordData.title || '',
                   rules: [
                     {
                       required: true,
@@ -486,14 +506,14 @@ class AllArticle extends PureComponent {
                     },
                   ],
                 })(<Input size="large" style={{ width: '100%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
           <Row>
-            <Col span={this.recordData.channelid === '5a9f87e1d2467c1d20c8ca65' ? 12 : 24}>
-              <FormItem label="副标题">
+            <Col span={recordData.channelid === '5a9f87e1d2467c1d20c8ca65' ? 12 : 24}>
+              <Form.Item label="副标题">
                 {getFieldDecorator('subtitle', {
-                  initialValue: this.recordData.subtitle || '',
+                  initialValue: recordData.subtitle || '',
                   rules: [
                     {
                       required: true,
@@ -505,34 +525,33 @@ class AllArticle extends PureComponent {
                     size="large"
                     rows={4}
                     style={{
-                      width:
-                        this.recordData.channelid === '5a9f87e1d2467c1d20c8ca65' ? '96%' : '100%',
+                      width: recordData.channelid === '5a9f87e1d2467c1d20c8ca65' ? '96%' : '100%',
                     }}
                   />
                 )}
-              </FormItem>
+              </Form.Item>
             </Col>
-            {this.recordData.channelid === '5a9f87e1d2467c1d20c8ca65' && (
+            {recordData.channelid === '5a9f87e1d2467c1d20c8ca65' && (
               <Col span={12}>
-                <FormItem label="详细参数">
+                <Form.Item label="详细参数">
                   {getFieldDecorator('productParmas', {
-                    initialValue: this.recordData.params || '',
+                    initialValue: recordData.params || '',
                     rules: [
                       {
                         message: '请填写产品详细！',
                       },
                     ],
                   })(<TextArea size="large" rows={4} style={{ width: '100%' }} />)}
-                </FormItem>
+                </Form.Item>
               </Col>
             )}
           </Row>
           <Row>
             <Col span={24}>
-              {/* <FormItem label="所属栏目">
+              {/* <Form.Item label="所属栏目">
                 {getFieldDecorator('channel', {
-                  initialValue: this.recordData.channelid
-                    ? this.recordData.channelid.split(',')
+                  initialValue: recordData.channelid
+                    ? recordData.channelid.split(',')
                     : ['59699396682e0924f818c8b8'],
                   rules: [
                     {
@@ -540,15 +559,15 @@ class AllArticle extends PureComponent {
                       message: '请选择所属栏目！',
                     },
                   ],
-                })(<CheckboxGroup options={this.passChannels} />)}
-              </FormItem> */}
-              <FormItem label="所属栏目">
+                })(<Checkbox.Group options={passChannels} />)}
+              </Form.Item> */}
+              <Form.Item label="所属栏目">
                 {/* {console.log(
-                  this.recordData.channelid && this.recordData.channelid.split(',')[0],
-                  'this.recordData.channelid'
+                  recordData.channelid && recordData.channelid.split(',')[0],
+                  'recordData.channelid'
                 )} */}
                 {getFieldDecorator('channel', {
-                  initialValue: this.recordData.channelid,
+                  initialValue: recordData.channelid,
                   rules: [
                     {
                       required: true,
@@ -556,16 +575,16 @@ class AllArticle extends PureComponent {
                     },
                   ],
                 })(
-                  <RadioGroup
+                  <Radio.Group
                     name="channelGroup"
-                    options={this.passChannels}
+                    options={passChannels}
                     onChange={this.changeRadio}
                   />
                 )}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={24}>
-              <FormItem label="内容(图片宽度请小于1000px)">
+              <Form.Item label="内容(图片宽度请小于1000px)">
                 {getFieldDecorator('content', {
                   initialValue: '',
                   rules: [
@@ -576,40 +595,40 @@ class AllArticle extends PureComponent {
                   ],
                 })(
                   <ReactQuill
-                    ref={(el) => {
-                      this.reactQuillRef = el;
+                    ref={el => {
+                      reactQuillRef = el;
                     }}
                     {...quillOptions}
                   />
                 )}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={8}>
-              <FormItem label="来源">
+              <Form.Item label="来源">
                 {getFieldDecorator('source', {
-                  initialValue: this.recordData.source || '',
+                  initialValue: recordData.source || '',
                 })(<Input size="large" style={{ width: '96%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={8}>
-              <FormItem label="作者">
+              <Form.Item label="作者">
                 {getFieldDecorator('author', {
-                  initialValue: this.recordData.author || '',
+                  initialValue: recordData.author || '',
                 })(<Input size="large" style={{ width: '96%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={8}>
-              <FormItem label="点击次数">
+              <Form.Item label="点击次数">
                 {getFieldDecorator('likenums', {
-                  initialValue: this.recordData.likenums || '',
+                  initialValue: recordData.likenums || '',
                 })(<Input size="large" style={{ width: '100%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={24}>
-              <FormItem label="发布至">
+              <Form.Item label="发布至">
                 {getFieldDecorator('site', {
-                  initialValue: this.recordData.siteid
-                    ? this.recordData.siteid.split(',')
+                  initialValue: recordData.siteid
+                    ? recordData.siteid.split(',')
                     : ['59607e3c682e090ca074ecfd'],
                   rules: [
                     {
@@ -617,11 +636,11 @@ class AllArticle extends PureComponent {
                       message: '请选择将发布至的站点！',
                     },
                   ],
-                })(<CheckboxGroup disabled options={this.passSites} />)}
-              </FormItem>
+                })(<Checkbox.Group disabled={true} options={passSites} />)}
+              </Form.Item>
             </Col>
           </Row>
-          <FormItem>
+          <Form.Item>
             <div style={{ marginTop: '-24px' }}>
               <Divider>
                 <span className="dividerFont">添加/编辑</span>
@@ -632,7 +651,7 @@ class AllArticle extends PureComponent {
                 {BTN_SAVE}
               </Button>
             </div>
-          </FormItem>
+          </Form.Item>
         </Form>
       </div>
     );
@@ -674,12 +693,16 @@ class AllArticle extends PureComponent {
         <div style={{ marginTop: '88px' }}>
           <Table
             rowKey="articleid"
-            columns={this.columns}
+            columns={columns(
+              {
+                handlerEdit: this.handlerEdit,
+                handlerDelete: this.handlerDelete,
+              },
+              this.props
+            )}
             loading={loading}
             dataSource={data}
-            expandedRowRender={record => (
-              <p style={{ margin: 0 }}>{`副标题: ${record.subtitle}`}</p>
-            )}
+            expandedRowRender={expandedRowRender}
             pagination={{
               size: 'small',
               showSizeChanger: true,
@@ -696,13 +719,4 @@ class AllArticle extends PureComponent {
   }
 }
 
-export default connect(({ global, article }) => ({
-  sitetypes: global.sitetypes,
-  channeltypes: global.channeltypes,
-  loading: article.loading,
-  uploading: article.uploading,
-  uploadImage: article.uploadImage,
-  confirmLoading: article.confirmLoading,
-  originalData: article.originalData,
-  data: article.data,
-}))(Form.create()(AllArticle));
+export default Form.create()(AllArticle) as any;

@@ -1,97 +1,107 @@
-import React, { PureComponent } from 'react';
+import { Button, Col, Divider, Form, Icon, Input, InputNumber, Row, Table, Upload } from 'antd';
 import { connect } from 'dva';
-import { Divider, Button, Row, Col, Table, Form, Input, InputNumber, Upload, Icon } from 'antd';
 import moment from 'moment';
+import * as React from 'react';
 // 组件
-import BreadCrumb from '@/components/BreadCrumb';
-import { openModal, openConfirm } from '@/components/Modal';
-import DetailHandler from '@/components/Handler/DetailHandler';
-// 样式
-// import styles from './Channels.less';
+import BreadCrumb from '../../components/BreadCrumb';
+import DetailHandler from '../../components/Handler/DetailHandler';
+import { openConfirm, openModal } from '../../components/Modal';
 // 常量
 import {
   API_DOMAIN,
-  URL_PREFIX,
-  BTN_SAVE,
   BTN_CANCEL,
   BTN_RESET,
-  MODEL_DEL_TITLE,
-  MODEL_DEL_DESCRIPTION,
-  MODEL_DEL_BTN_OK,
-  MODEL_ADDEDIT_TITLE,
+  BTN_SAVE,
   MODEL_ADDEDIT_DESCRIPTION,
+  MODEL_ADDEDIT_TITLE,
+  MODEL_DEL_BTN_OK,
+  MODEL_DEL_DESCRIPTION,
+  MODEL_DEL_TITLE,
   MODEL_WIDTH_EDIT,
-} from '@/utils/consts';
+  URL_PREFIX,
+} from '../../utils/consts';
 // 方法
-import { strToUpper, beforeUpload } from '@/utils/fns';
+import { beforeUpload, strToUpper } from '../../utils/fns';
+// 声明
+import { IShopProps as IProps, IShopStates as IStates } from './';
 
-const FormItem = Form.Item;
-const { TextArea } = Input;
+// 样式
+// const styles = require('./Channels.less');
+const { TextArea }: any = Input;
 
-class AllBrand extends PureComponent {
-  constructor(props) {
+let handleStatus = 0; // 0:添加 1:编辑
+// 表格 列表项 数据
+let recordData: any = {};
+// 表格 列表项
+const columns = (fn: any) => [
+  {
+    title: '店铺名称',
+    dataIndex: 'name',
+    key: 'name',
+    render: (text: any) => <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{text}</span>,
+  },
+  {
+    title: '详细描述',
+    dataIndex: 'description',
+    key: 'description',
+    render: (text: any) => <span>{text}</span>,
+  },
+  {
+    title: '发布/更新日期',
+    dataIndex: 'updateDate',
+    key: 'updateDate',
+    width: 240,
+    render: (text: any, record: any) => (
+      <span>{`${moment(parseInt(record.updateDate, 10)).format('YYYY年MM月DD日 HH:mm:ss')}`}</span>
+    ),
+  },
+  {
+    title: '操作',
+    dataIndex: 'action',
+    key: 'action',
+    width: 180,
+    render: (text: any, record: any) => {
+      return (
+        <div>
+          <Button onClick={fn.handlerEdit.bind(null, record)}>编辑</Button>
+          <Divider type="vertical" />
+          <Button
+            onClick={fn.handlerDelete.bind(null, record.shopid)}
+            style={{ marginTop: '12px' }}
+            type="primary"
+          >
+            删除
+          </Button>
+        </div>
+      );
+    },
+  },
+];
+const expandedRowRender = (record: any) => [
+  <p key={record.tel} style={{ margin: 0 }}>{`联系电话: ${record.tel}`}</p>,
+  <p key={record.address} style={{ margin: 0 }}>{`店铺地址: ${record.address}`}</p>,
+];
+
+@connect(({ shop }: any) => ({
+  loading: shop.loading,
+  confirmLoading: shop.confirmLoading,
+  originalData: shop.originalData,
+  data: shop.data,
+  uploading: shop.uploading,
+  uploadImage: shop.uploadImage,
+}))
+class AllShop extends React.PureComponent<IProps, IStates> {
+  constructor(props: any) {
     super(props);
 
     this.state = {
       visible: false,
     };
-
-    this.handleStatus = 0; // 0:添加 1:编辑
-
-    // 列表项数据
-    this.recordData = {};
-
-    this.columns = [
-      {
-        title: '品牌',
-        dataIndex: 'title',
-        key: 'title',
-        render: text => <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{text}</span>,
-      },
-      // {
-      //   title: '详细描述',
-      //   dataIndex: 'description',
-      //   key: 'description',
-      //   render: text => <span>{text}</span>,
-      // },
-      {
-        title: '发布/更新日期',
-        dataIndex: 'updateDate',
-        key: 'updateDate',
-        width: 240,
-        render: (text, record) => (
-          <span>
-            {`${moment(parseInt(record.updateDate, 10)).format('YYYY年MM月DD日 HH:mm:ss')}`}
-          </span>
-        ),
-      },
-      {
-        title: '操作',
-        dataIndex: 'action',
-        key: 'action',
-        width: 180,
-        render: (text, record) => {
-          return (
-            <div>
-              <Button onClick={this.handlerEdit.bind(this, record)}>编辑</Button>
-              <Divider type="vertical" />
-              <Button
-                onClick={this.handlerDelete.bind(this, record.brandid)}
-                style={{ marginTop: '12px' }}
-                type="primary"
-              >
-                删除
-              </Button>
-            </div>
-          );
-        },
-      },
-    ];
   }
 
   componentWillMount() {
     this.props.dispatch({
-      type: 'brand/queryBrandLists',
+      type: 'shop/queryShopLists',
     });
   }
   componentDidUpdate() {
@@ -100,12 +110,12 @@ class AllBrand extends PureComponent {
   }
 
   // Pagination
-  onShowSizeChange = (current, pageSize) => {
+  onShowSizeChange = (current: number, pageSize: number) => {
     console.log(current, pageSize);
   };
 
   // filter data
-  filterData = (key) => {
+  filterData = (key: string) => {
     if (key.indexOf('SELECTDATE') !== -1) {
       const newKey = key.slice('SELECTDATE'.length + 1);
       // console.log(newKey, 'newKey');
@@ -114,32 +124,34 @@ class AllBrand extends PureComponent {
     }
     const newKey = key.toString().toUpperCase();
     const { dispatch, data } = this.props;
-    const result = data.filter((item) => {
+    const result = data.filter(item => {
       return (
-        strToUpper(item.title).indexOf(newKey) !== -1 ||
-        strToUpper(item.description).indexOf(newKey) !== -1
+        strToUpper(item.name).indexOf(newKey) !== -1 ||
+        strToUpper(item.description).indexOf(newKey) !== -1 ||
+        strToUpper(item.address).indexOf(newKey) !== -1 ||
+        strToUpper(item.tel).indexOf(newKey) !== -1
       );
     });
 
     dispatch({
-      type: 'brand/getBrandLists',
+      type: 'shop/getShopLists',
       payload: result,
     });
   };
 
   // filter date 日期
-  filterSelectDate = (key) => {
+  filterSelectDate = (key: string) => {
     const arr = key.split(',');
     const start = moment(arr[0]).valueOf();
     const end = moment(arr[1]).valueOf();
     const { dispatch, data } = this.props;
-    const result = data.filter((item) => {
+    const result = data.filter(item => {
       const select = parseInt(item.updateDate, 10);
       return select >= start && select <= end;
     });
 
     dispatch({
-      type: 'brand/getBrandLists',
+      type: 'shop/getShopLists',
       payload: result,
     });
   };
@@ -149,7 +161,7 @@ class AllBrand extends PureComponent {
     const { dispatch, originalData } = this.props;
 
     dispatch({
-      type: 'brand/getBrandLists',
+      type: 'shop/getShopLists',
       payload: originalData,
     });
   };
@@ -157,10 +169,10 @@ class AllBrand extends PureComponent {
   // 添加
   handlerAdd = () => {
     console.log('添加');
-    this.handleStatus = 0;
-    this.recordData = {};
+    handleStatus = 0;
+    recordData = {};
     this.props.dispatch({
-      type: 'brand/changeUpLoadImage',
+      type: 'shop/changeUpLoadImage',
       payload: '',
     });
     this.showModal();
@@ -168,8 +180,8 @@ class AllBrand extends PureComponent {
   // 编辑
   handlerEdit = (record = {}) => {
     console.log('编辑');
-    this.handleStatus = 1;
-    this.recordData = { ...record };
+    handleStatus = 1;
+    recordData = { ...record };
     this.showModal();
   };
   // 删除
@@ -189,45 +201,45 @@ class AllBrand extends PureComponent {
     const { dispatch } = this.props;
 
     dispatch({
-      type: 'brand/delBrand',
+      type: 'shop/delShop',
       payload: record,
     });
   };
   // submit
-  handleSubmit = (event) => {
+  handleSubmit = (event: any) => {
     console.log('保存');
     event.preventDefault();
     const { confirmLoading, form } = this.props;
 
     if (!confirmLoading) {
-      form.validateFields({ force: true }, (err, values) => {
+      form.validateFields({ force: true }, (err: any, values: any) => {
         const { dispatch, uploadImage } = this.props;
         // console.log(values, 'values');
         if (!err) {
           // 传递给api
-          const passApiFormData = {
-            title: values.title,
-            entitle: values.entitle,
-            subtitle: values.subtitle,
-            tag: values.tag,
+          const passApiFormData: any = {
+            name: values.name,
             description: values.description,
+            url: uploadImage || recordData.url,
+            tel: values.tel,
+            address: values.address,
+            traffic: values.traffic,
             weight: values.weight,
-            url: uploadImage || this.recordData.url,
           };
 
-          if (!this.handleStatus) {
+          if (!handleStatus) {
             // console.log(passApiFormData, 'passApiFormData');
             // 添加店铺
             dispatch({
-              type: 'brand/addBrand',
+              type: 'shop/addShop',
               payload: passApiFormData,
             });
           } else {
-            passApiFormData.brandid = this.recordData.brandid;
+            passApiFormData.shopid = recordData.shopid;
             // console.log(passApiFormData, 'passApiFormData');
             // 编辑店铺
             dispatch({
-              type: 'brand/editBrand',
+              type: 'shop/editShop',
               payload: passApiFormData,
             });
           }
@@ -238,12 +250,12 @@ class AllBrand extends PureComponent {
           }, 500);
         } else {
           dispatch({
-            type: 'brand/changeConfirmLoading',
+            type: 'shop/changeConfirmLoading',
             payload: true,
           });
           setTimeout(() => {
             dispatch({
-              type: 'brand/changeConfirmLoading',
+              type: 'shop/changeConfirmLoading',
               payload: false,
             });
           }, 1500);
@@ -254,13 +266,13 @@ class AllBrand extends PureComponent {
   // 重置
   handleReset = () => {
     console.log('重置');
-    this.props.form.resetFields(['title', 'entitle', 'subtitle', 'tag', 'description', 'weight']);
+    this.props.form.resetFields(['name', 'description', 'tel', 'address', 'traffic', 'weight']);
   };
   // show Modal
   showModal = () => {
     this.setState({ visible: true });
     this.props.dispatch({
-      type: 'brand/changeUpLoadImage',
+      type: 'shop/changeUpLoadImage',
       payload: '',
     });
   };
@@ -269,8 +281,8 @@ class AllBrand extends PureComponent {
     this.setState({ visible: false });
   };
 
-  // 自定义上传 栏目
-  uploadBrand = (event) => {
+  // 自定义上传 店铺
+  uploadShop = (event: any) => {
     const { dispatch } = this.props;
     const { file, filename } = event;
     const formData = new FormData(); // 创建form对象
@@ -278,7 +290,7 @@ class AllBrand extends PureComponent {
     formData.append(filename, file, file.name);
 
     dispatch({
-      type: 'brand/uploadBrand',
+      type: 'shop/uploadShop',
       payload: formData,
     });
   };
@@ -288,7 +300,7 @@ class AllBrand extends PureComponent {
 
     if (uploading === 'done' || uploading === 'error') {
       dispatch({
-        type: 'brand/changeUpLoading',
+        type: 'shop/changeUpLoading',
         payload: false,
       });
     }
@@ -303,14 +315,14 @@ class AllBrand extends PureComponent {
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Col span={24}>
-              <FormItem label="品牌图片">
-                {getFieldDecorator('brandImage')(
+              <Form.Item label="店铺图片">
+                {getFieldDecorator('shopImage')(
                   <Upload
-                    name="brandImage"
+                    name="shopImage"
                     showUploadList={false}
-                    action={`${API_DOMAIN}/api/server/upload/brandimages`}
+                    action={`${API_DOMAIN}/api/server/upload/shopimages`}
                     beforeUpload={beforeUpload}
-                    customRequest={this.uploadBrand}
+                    customRequest={this.uploadShop}
                   >
                     <Button>
                       <Icon type={uploading && uploading === 'loading' ? 'loading' : 'plus'} />{' '}
@@ -321,132 +333,106 @@ class AllBrand extends PureComponent {
                           <span className="uploadSuccess">上传成功</span>
                         )
                       ) : (
-                        '更新/上传品牌图片'
+                        '更新/上传店铺图片'
                       )}
                     </Button>
                   </Upload>
                 )}
-                {(uploadImage || this.recordData.url) && (
+                {(uploadImage || recordData.url) && (
                   <img
-                    src={`${URL_PREFIX}${uploadImage || this.recordData.url}`}
+                    src={`${URL_PREFIX}${uploadImage || recordData.url}`}
                     style={{ maxWidth: '100%', marginTop: '6px', display: 'block' }}
                     alt="店铺图片"
                   />
                 )}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
           <Row>
-            <Col span={12}>
-              <FormItem label="品牌(中文)">
-                {getFieldDecorator('title', {
-                  initialValue: this.recordData.title || '',
+            <Col span={8}>
+              <Form.Item label="店铺">
+                {getFieldDecorator('name', {
+                  initialValue: recordData.name || '',
                   rules: [
                     {
                       required: true,
-                      message: '请填写舒览品牌中文名称！',
+                      message: '请填写店铺名称！',
                     },
                   ],
                 })(<Input size="large" style={{ width: '96%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
-            <Col span={12}>
-              <FormItem label="英文名">
-                {getFieldDecorator('entitle', {
-                  initialValue: this.recordData.entitle || '',
-                  rules: [
-                    {
-                      required: true,
-                      message: '请填写舒览品牌英文名称！',
-                    },
-                  ],
-                })(<Input size="large" style={{ width: '96%' }} />)}
-              </FormItem>
-            </Col>
-            {/* <Col span={12}>
-              <FormItem label="联系电话">
+            <Col span={8}>
+              <Form.Item label="联系电话">
                 {getFieldDecorator('tel', {
-                  initialValue: this.recordData.tel || '',
+                  initialValue: recordData.tel || '',
                   rules: [
                     {
                       required: true,
                       message: '请填写联系电话！',
                     },
                   ],
-                })(<Input size="large" style={{ width: '100%' }} />)}
-              </FormItem>
-            </Col> */}
-          </Row>
-          <Row>
-            <Col span={12}>
-              <FormItem label="权重(值越小越靠前)">
+                })(<Input size="large" style={{ width: '96%' }} />)}
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label="权重(值越小越靠前)">
                 {getFieldDecorator('weight', {
-                  initialValue: this.recordData.weight || 0,
+                  initialValue: recordData.weight || 0,
                   rules: [
                     {
                       required: true,
                       message: '请填写排序权重！',
                     },
                   ],
-                })(<InputNumber size="large" style={{ width: '96%' }} min={0} step={1} />)}
-              </FormItem>
-            </Col>
-            <Col span={12}>
-              <FormItem label="标签">
-                {getFieldDecorator('tag', {
-                  initialValue: this.recordData.tag || '',
-                  rules: [
-                    {
-                      required: true,
-                      message: '请填写标签！',
-                    },
-                  ],
-                })(<Input size="large" style={{ width: '100%' }} />)}
-              </FormItem>
+                })(<InputNumber size="large" style={{ width: '100%' }} min={0} step={1} />)}
+              </Form.Item>
             </Col>
           </Row>
           <Row>
-            {/* <Col span={24}>
-              <FormItem label="具体地址">
+            <Col span={12}>
+              <Form.Item label="店铺地址">
                 {getFieldDecorator('address', {
-                  initialValue: this.recordData.address || '',
+                  initialValue: recordData.address || '',
                   rules: [
                     {
                       required: true,
-                      message: '请填写具体详细地址！',
-                    },
-                  ],
-                })(<TextArea size="large" rows={4} />)}
-              </FormItem>
-            </Col> */}
-            <Col span={12}>
-              <FormItem label="副标题">
-                {getFieldDecorator('subtitle', {
-                  initialValue: this.recordData.subtitle || '',
-                  rules: [
-                    {
-                      // required: true,
-                      message: '请填写舒览品牌副标题！',
+                      message: '请填写店铺详细地址！',
                     },
                   ],
                 })(<TextArea size="large" rows={4} style={{ width: '96%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={12}>
-              <FormItem label="详细描述">
-                {getFieldDecorator('description', {
-                  initialValue: this.recordData.description || '',
+              <Form.Item label="周边交通">
+                {getFieldDecorator('traffic', {
+                  initialValue: recordData.traffic || '',
                   rules: [
                     {
-                      // required: true,
-                      message: '请填写舒览品牌详细描述！',
+                      required: true,
+                      message: '请填写店铺周边交通！',
                     },
                   ],
                 })(<TextArea size="large" rows={4} style={{ width: '100%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
-          <FormItem>
+          <Row>
+            <Col span={24}>
+              <Form.Item label="详细描述">
+                {getFieldDecorator('description', {
+                  initialValue: recordData.description || '',
+                  rules: [
+                    {
+                      required: true,
+                      message: '请填写店铺详细描述！',
+                    },
+                  ],
+                })(<TextArea size="large" rows={4} />)}
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item>
             <div style={{ marginTop: '-24px' }}>
               <Divider>
                 <span className="dividerFont">添加/编辑</span>
@@ -457,7 +443,7 @@ class AllBrand extends PureComponent {
                 {BTN_SAVE}
               </Button>
             </div>
-          </FormItem>
+          </Form.Item>
         </Form>
       </div>
     );
@@ -476,30 +462,26 @@ class AllBrand extends PureComponent {
             footer: null,
           },
         ])}
-        <div className="componentBackground"><BreadCrumb /></div>
+        <div className="componentBackground">
+          <BreadCrumb />
+        </div>
         <DetailHandler filterData={this.filterData} resetData={this.resetData} />
         <Divider />
         <div>
           <Button style={{ float: 'right' }} type="primary" size="large" onClick={this.handlerAdd}>
-            添加新品牌
+            添加新店铺
           </Button>
         </div>
         <div style={{ marginTop: '88px' }}>
           <Table
-            rowKey="brandid"
-            columns={this.columns}
+            rowKey="shopid"
+            columns={columns({
+              handlerEdit: this.handlerEdit,
+              handlerDelete: this.handlerDelete,
+            })}
             loading={loading}
             dataSource={data}
-            expandedRowRender={record => [
-              <p key={record.subtitle} style={{ padding: '0 0 12px 0' }}>
-                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>副标题: </span>
-                {record.subtitle}
-              </p>,
-              <p key={record.description} style={{ padding: '0 0 12px 0' }}>
-                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>详细描述: </span>
-                {record.description}
-              </p>,
-            ]}
+            expandedRowRender={expandedRowRender}
             pagination={{
               size: 'small',
               showSizeChanger: true,
@@ -516,11 +498,4 @@ class AllBrand extends PureComponent {
   }
 }
 
-export default connect(({ brand }) => ({
-  loading: brand.loading,
-  confirmLoading: brand.confirmLoading,
-  originalData: brand.originalData,
-  data: brand.data,
-  uploading: brand.uploading,
-  uploadImage: brand.uploadImage,
-}))(Form.create()(AllBrand));
+export default Form.create()(AllShop) as any;

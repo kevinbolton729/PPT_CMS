@@ -1,44 +1,53 @@
-import React, { PureComponent } from 'react';
+import { Button, Card, Col, Divider, Form, Icon, Input, Row, Upload } from 'antd';
 import { connect } from 'dva';
-import { Row, Col, Card, Icon, Upload, Divider, Button, Form, Input } from 'antd';
+import * as React from 'react';
 // import moment from 'moment';
 // 组件
-import BreadCrumb from '@/components/BreadCrumb';
-import { openModal } from '@/components/Modal';
+import BreadCrumb from '../../components/BreadCrumb';
+import { openModal } from '../../components/Modal';
 // 常量
 import {
-  URL_PREFIX,
-  BTN_SAVE,
-  BTN_RESET,
-  MODEL_ADDEDIT_TITLE,
-  MODEL_ADDEDIT_DESCRIPTION,
-  MODEL_WIDTH_EDIT,
   ADVER_NOTITLE,
+  BTN_RESET,
+  BTN_SAVE,
   IMAGE_NODESCRIPTION,
-} from '@/utils/consts';
+  MODEL_ADDEDIT_DESCRIPTION,
+  MODEL_ADDEDIT_TITLE,
+  MODEL_WIDTH_EDIT,
+  URL_PREFIX,
+} from '../../utils/consts';
 // 方法
-import { beforeUpload, beforeUploadVideo } from '@/utils/fns';
+import { beforeUpload, beforeUploadVideo } from '../../utils/fns';
+// 声明
+import { IAdverProps as IProps, IAdverStates as IStates } from './';
+
 // 样式
-import styles from './Advers.less';
+const styles = require('./Advers.less');
 
-const { Meta } = Card;
-const FormItem = Form.Item;
-const { TextArea } = Input;
+const { Meta }: any = Card;
+const { TextArea }: any = Input;
 
-class Adver extends PureComponent {
-  constructor(props) {
+// 当前操作项ID值
+let currentid: any = null;
+// 当前操作项的weight值
+let currentWeight: any = null;
+// 列表项数据
+let recordData: any = {};
+
+@connect(({ adver }: any) => ({
+  loading: adver.loading,
+  originalData: adver.originalData,
+  data: adver.data,
+  uploading: adver.uploading,
+  confirmLoading: adver.confirmLoading,
+}))
+class Adver extends React.PureComponent<IProps, IStates> {
+  constructor(props: any) {
     super(props);
 
     this.state = {
       visible: false,
     };
-
-    // 当前操作项ID值
-    this.currentid = null;
-    // 当前操作项的weight值
-    this.currentWeight = null;
-    // 列表项数据
-    this.recordData = {};
   }
   componentWillMount() {
     const { dispatch } = this.props;
@@ -52,28 +61,28 @@ class Adver extends PureComponent {
   }
 
   // 点击上传按钮后
-  clicked = (weight, id) => {
-    this.currentWeight = weight;
-    this.currentid = id;
+  clicked = (weight: number, id: number) => {
+    currentWeight = weight;
+    currentid = id;
   };
   // submit
-  handleSubmit = (event) => {
+  handleSubmit = (event: any) => {
     // console.log('submit');
     event.preventDefault();
 
     if (!this.props.confirmLoading) {
-      this.props.form.validateFields({ force: true }, (err, values) => {
+      this.props.form.validateFields({ force: true }, (err: any, values: any) => {
         const { dispatch } = this.props;
         if (!err) {
           // console.log(values, 'values');
           // 传递给api
-          const passApiFormData = {
+          const passApiFormData: any = {
             title: values.title,
             description: values.description,
-            url: this.recordData.url || '',
+            url: recordData.url || '',
             topath: values.topath,
           };
-          passApiFormData.id = this.recordData.id;
+          passApiFormData.id = recordData.id;
           // console.log(passApiFormData, 'passApiFormData');
           // 编辑广告图片
           dispatch({
@@ -117,13 +126,13 @@ class Adver extends PureComponent {
   };
 
   // 自定义上传 广告图片
-  uploadAdver = (event) => {
+  uploadAdver = (event: any) => {
     const { dispatch } = this.props;
     const { file, filename } = event;
     const formData = new FormData(); // 创建form对象
 
     formData.append(filename, file, file.name);
-    formData.append('weight', this.currentWeight);
+    formData.append('weight', currentWeight);
 
     dispatch({
       type: 'adver/uploadAdver',
@@ -131,13 +140,13 @@ class Adver extends PureComponent {
     });
   };
   // 自定义上传 广告视频
-  uploadVideo = (event) => {
+  uploadVideo = (event: any) => {
     const { dispatch } = this.props;
     const { file, filename } = event;
     const formData = new FormData(); // 创建form对象
 
     formData.append(filename, file, file.name);
-    formData.append('weight', this.currentWeight);
+    formData.append('weight', currentWeight);
 
     dispatch({
       type: 'adver/uploadVideo',
@@ -160,7 +169,7 @@ class Adver extends PureComponent {
   // 编辑
   handlerEdit = (record = {}) => {
     console.log('编辑');
-    this.recordData = { ...record };
+    recordData = { ...record };
     this.showModal();
   };
 
@@ -175,9 +184,9 @@ class Adver extends PureComponent {
         <Form onSubmit={this.handleSubmit}>
           <Row>
             <Col span={12}>
-              <FormItem label="标题">
+              <Form.Item label="标题">
                 {getFieldDecorator('title', {
-                  initialValue: this.recordData.title || '',
+                  initialValue: recordData.title || '',
                   rules: [
                     {
                       required: true,
@@ -185,27 +194,27 @@ class Adver extends PureComponent {
                     },
                   ],
                 })(<Input size="large" style={{ width: '96%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
             <Col span={12}>
-              <FormItem label="跳转地址">
+              <Form.Item label="跳转地址">
                 {getFieldDecorator('topath', {
-                  initialValue: this.recordData.topath || '',
+                  initialValue: recordData.topath || '',
                   rules: [
                     {
-                      required: this.recordData.isVideo !== 1,
+                      required: recordData.isVideo !== 1,
                       message: '请填写广告跳转地址！',
                     },
                   ],
                 })(<Input addonBefore="Http://" size="large" style={{ width: '100%' }} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
           <Row>
             <Col span={24}>
-              <FormItem label="描述">
+              <Form.Item label="描述">
                 {getFieldDecorator('description', {
-                  initialValue: this.recordData.description || '',
+                  initialValue: recordData.description || '',
                   rules: [
                     {
                       required: true,
@@ -213,10 +222,10 @@ class Adver extends PureComponent {
                     },
                   ],
                 })(<TextArea size="large" rows={4} />)}
-              </FormItem>
+              </Form.Item>
             </Col>
           </Row>
-          <FormItem>
+          <Form.Item>
             <div style={{ marginTop: '-24px' }}>
               <Divider>
                 <span className="dividerFont">编辑广告图片/视频信息</span>
@@ -227,7 +236,7 @@ class Adver extends PureComponent {
                 {BTN_SAVE}
               </Button>
             </div>
-          </FormItem>
+          </Form.Item>
         </Form>
       </div>
     );
@@ -270,25 +279,27 @@ class Adver extends PureComponent {
                       }
                       actions={[
                         <Button
+                          key="button"
                           className={styles.uploadBtn}
                           onClick={this.handlerEdit.bind(this, current)}
                         >
                           <Icon type="edit" />
                         </Button>,
                         <Upload
+                          key="upload"
                           name={current.isVideo !== 1 ? 'adverImage' : 'homeVideo'}
                           showUploadList={false}
                           beforeUpload={current.isVideo !== 1 ? beforeUpload : beforeUploadVideo}
                           customRequest={
                             current.isVideo !== 1 ? this.uploadAdver : this.uploadVideo
                           }
-                          disabled={this.currentid === current.id && uploading}
+                          disabled={currentid === current.id && uploading}
                         >
                           <Button
                             className={styles.uploadBtn}
                             onClick={this.clicked.bind(this, current.weight, current.id)}
                           >
-                            {this.currentid === current.id && uploading ? (
+                            {currentid === current.id && uploading ? (
                               <Icon type="loading">上传中...</Icon>
                             ) : (
                               <Icon type="upload" />
@@ -317,10 +328,4 @@ class Adver extends PureComponent {
   }
 }
 
-export default connect(({ adver }) => ({
-  loading: adver.loading,
-  originalData: adver.originalData,
-  data: adver.data,
-  uploading: adver.uploading,
-  confirmLoading: adver.confirmLoading,
-}))(Form.create()(Adver));
+export default Form.create()(Adver) as any;
