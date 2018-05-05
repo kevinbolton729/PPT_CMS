@@ -15,7 +15,7 @@ module.exports = {
       'rc-drawer-menu',
       'react-quill',
     ],
-    index: './src/index.js',
+    index: './src/index.ts',
   },
   outputPath: resolve(__dirname, 'dist'),
   publicPath: '/',
@@ -29,10 +29,7 @@ module.exports = {
   manifest: {
     basePath: '/',
   },
-  // externals: {
-  //   react: 'window.React',
-  //   'react-dom': 'window.ReactDOM',
-  // },
+  // externals: {},
   html: {
     template: './src/index.ejs',
   },

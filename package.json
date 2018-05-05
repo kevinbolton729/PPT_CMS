@@ -1,13 +1,13 @@
 {
-  "name": "ant-design-pro",
+  "name": "ppt-cms",
   "version": "1.1.0",
-  "description": "An out-of-box UI solution for enterprise applications",
+  "description": "An ppt-cms UI solution for enterprise applications",
   "private": true,
   "scripts": {
     "precommit": "npm run lint-staged",
-    "start": "cross-env ESLINT=none PORT=8001 roadhog dev",
-    "start:no-proxy": "cross-env NO_PROXY=true ESLINT=none roadhog dev",
-    "build": "cross-env ESLINT=none roadhog build",
+    "start": "cross-env ESLINT=true TSLINT=true PORT=8001 roadhog dev",
+    "start:no-proxy": "cross-env NO_PROXY=true ESLINT=true TSLINT=true roadhog dev",
+    "build": "cross-env ESLINT=none TSLINT=none roadhog build",
     "site": "roadhog-api-doc static && gh-pages -d dist",
     "analyze": "cross-env ANALYZE=true roadhog build",
     "lint:style": "stylelint \"src/**/*.less\" --syntax less",

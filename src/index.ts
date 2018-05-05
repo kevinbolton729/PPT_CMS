@@ -1,11 +1,11 @@
 import '@babel/polyfill';
-import 'url-polyfill';
 import dva from 'dva';
+import 'url-polyfill';
 
 // import createHistory from 'history/createHashHistory';
 // user BrowserHistory
-import createHistory from 'history/createBrowserHistory';
 import createLoading from 'dva-loading';
+import createHistory from 'history/createBrowserHistory';
 
 import FastClick from 'fastclick';
 
@@ -15,13 +15,15 @@ import 'moment/locale/zh-cn';
 
 // 样式
 import 'react-quill/dist/quill.snow.css'; // 富文本编辑器 react-quill样式
+// 声明
+import { App } from './global';
 import './static/index.less';
 
 // Moment 中文设置
 moment.locale('zh-cn');
 
 // 1. Initialize
-const app = dva({
+const app: App = dva({
   history: createHistory(),
 });
 
