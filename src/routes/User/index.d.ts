@@ -1,15 +1,14 @@
 import * as React from 'react';
-import { IProps, IReturnTypes } from '../../global';
+import { IAction } from '../../global';
 
-type Dispatch = IProps['dispatch'];
-type ReturnVoid = IReturnTypes['void'];
+type Dispatch = IAction['dispatch'];
 
-export interface ILoginProps {
+export interface IProps {
   dispatch: Dispatch;
   login: any;
   submitting: boolean;
 }
-export interface ILoginStates {
+export interface IStates {
   type: string;
   autoLogin: boolean;
   mode: {

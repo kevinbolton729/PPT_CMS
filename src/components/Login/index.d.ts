@@ -1,5 +1,5 @@
-import * as React from "react";
-import Button from "antd/lib/button";
+import * as React from 'react';
+import Button from 'antd/lib/button';
 export interface LoginProps {
   defaultActiveKey?: string;
   onTabChange?: (key: string) => void;
@@ -17,6 +17,7 @@ export interface LoginItemProps {
   name?: string;
   rules?: any[];
   style?: React.CSSProperties;
+  placeholder?: string;
   onGetCaptcha?: () => void;
 }
 
