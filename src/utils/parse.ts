@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-export async function parseResponse(params) {
+export const parseResponse = (params: any) => {
   const { status, message, extData } = params;
   const count = extData.count || 0;
   const data = extData.data || [];
@@ -11,14 +11,14 @@ export async function parseResponse(params) {
     count,
     data,
   };
-}
+};
 
-export async function parseData(data) {
+export const parseData = (data: any) => {
   const handlerData = data;
   // 按 updateDate 排序
-  handlerData.sort((a, b) => (a.updateDate < b.updateDate ? 1 : -1));
+  handlerData.sort((a: any, b: any) => (a.updateDate < b.updateDate ? 1 : -1));
 
-  const newData = handlerData.map((item, index) => ({
+  const newData = handlerData.map((item: any, index: number) => ({
     key: index,
     sort: item.accountId,
     amount: item.accountAmount,
@@ -29,13 +29,13 @@ export async function parseData(data) {
   }));
 
   return newData;
-}
+};
 
-export async function parseSorts(sorts) {
-  return sorts.map(item => ({
+export const parseSorts = (sorts: any) => {
+  return sorts.map((item: any) => ({
     sortId: item.sortId,
     sortType: item.sortType,
     sortName: item.sortName,
     sortPid: item.sortPid,
   }));
-}
+};

@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { notification } from 'antd';
+import axios from 'axios';
 import qs from 'qs';
 // 常量
 // import { LOCALSTORAGENAME } from '@/utils/consts';
@@ -23,7 +23,7 @@ const codeMessage = {
   555: '网络请求错误',
 };
 
-function checkStatus(response, resolve) {
+function checkStatus(response: any, resolve: any) {
   if (response.status >= 200 && response.status < 300) {
     return resolve(response);
   }
@@ -32,12 +32,12 @@ function checkStatus(response, resolve) {
     message: `请求错误 ${response.status}: ${response.url}`,
     description: errortext,
   });
-  const error = new Error(errortext);
+  const error: any = new Error(errortext);
   error.status = response.status;
   throw error;
 }
 
-function fetch(url, options) {
+function fetch(url: string, options: any) {
   let withCredentials = true;
   if (options && options.credentials) {
     withCredentials = options.credentials;
@@ -55,10 +55,10 @@ function fetch(url, options) {
       withCredentials,
       responseType: options.responseType || 'json',
     })
-      .then((response) => {
+      .then(response => {
         checkStatus(response, resolve);
       })
-      .catch((error) => {
+      .catch(error => {
         reject(error);
       });
   });
@@ -81,11 +81,11 @@ function fetch(url, options) {
 // request/response拦截器
 // Add a request interceptor
 axios.interceptors.request.use(
-  (config) => {
+  config => {
     // Do something before request is sent
     return config;
   },
-  (error) => {
+  error => {
     // Do something with request error
     return Promise.reject(error);
   }
@@ -93,11 +93,11 @@ axios.interceptors.request.use(
 
 // Add a response interceptor
 axios.interceptors.response.use(
-  (response) => {
+  response => {
     // Do something with response data
     return response;
   },
-  (error) => {
+  error => {
     // Do something with response error
     return Promise.reject(error);
   }
@@ -110,7 +110,7 @@ axios.interceptors.response.use(
  * @param  {object} [options] The options we want to pass to "fetch"
  * @return {object}           An object containing either "data" or "err"
  */
-export default function request(url, options) {
+export default function request(url: string, options: any) {
   const newOptions = { ...options };
 
   newOptions.headers = {
@@ -134,8 +134,8 @@ export default function request(url, options) {
   }
 
   return fetch(url, newOptions)
-    .then(response => response.data)
-    .catch((error) => {
+    .then((response: any) => response.data)
+    .catch(error => {
       const newError = error;
       const errorMessage = newError.message;
       newError.message = codeMessage[newError.status] || codeMessage['555'];

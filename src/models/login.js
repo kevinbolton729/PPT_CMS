@@ -13,7 +13,7 @@ import {
   // LOCALSTORAGENAME,
 } from '@/utils/consts';
 // 方法
-// import { delToken } from '@/utils/fns';
+// import {} from '@/utils/fns';
 
 export default {
   namespace: 'login',

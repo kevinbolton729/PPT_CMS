@@ -2,29 +2,29 @@
  * @Author: Kevin Bolton
  * @Date: 2018-02-05 22:04:50
  * @Last Modified by: Kevin Bolton
- * @Last Modified time: 2018-04-10 13:42:52
+ * @Last Modified time: 2018-05-05 19:57:03
  */
-import React from 'react';
-import { routerRedux } from 'dva/router';
 import { message as openMessage, Tag } from 'antd';
+import { routerRedux } from 'dva/router';
 import md5 from 'js-md5';
+import * as React from 'react';
 // 常量
 import {
-  URL_PREFIX,
   API_DOMAIN,
-  SECRETKEY_USER,
   DATA_NODATA,
-  // LOCALSTORAGENAME,
   PAGELOGIN,
-} from '@/utils/consts';
+  SECRETKEY_USER,
+  // LOCALSTORAGENAME,
+  URL_PREFIX,
+} from './consts';
 
 // md5处理
-export const setMd5 = (pwd) => {
+export const setMd5 = (pwd: string) => {
   return md5(md5(pwd + SECRETKEY_USER) + SECRETKEY_USER);
 };
 
 // 格式化数字
-const twoDecimal = (num) => {
+const twoDecimal = (num: string) => {
   // 显示数字，保留小数点后两位
   // 返回值的类型为String
   const f = parseFloat(num);
@@ -35,9 +35,9 @@ const twoDecimal = (num) => {
 
   return (Math.floor(f * 100) / 100).toFixed(2);
 };
-export const parseNum = value => twoDecimal(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+export const parseNum = (value: string) => twoDecimal(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 // 解析URL地址
-export const parseUrl = (url) => {
+export const parseUrl = (url: string) => {
   let newUrl = url;
   const httpIndexOf = newUrl && newUrl.indexOf('http');
   if (httpIndexOf === -1) {
@@ -46,7 +46,7 @@ export const parseUrl = (url) => {
   return newUrl;
 };
 // 获取sort
-export const getSortType = (sort, maps = []) => {
+export const getSortType = (sort: any, maps: any[] = []) => {
   let sortTypeNum = 0;
   const codes = maps;
   for (let i = 0; i < codes.length; i += 1) {
@@ -56,10 +56,10 @@ export const getSortType = (sort, maps = []) => {
       break;
     }
   }
-  return parseInt(sortTypeNum, 10);
+  return parseInt(sortTypeNum + '', 10);
 };
 // 获取typeName
-export const getTypeName = (sort, maps = []) => {
+export const getTypeName = (sort: any, maps: any[] = []) => {
   let result = DATA_NODATA;
   let parentName = '';
   const codes = maps;
@@ -77,14 +77,14 @@ export const getTypeName = (sort, maps = []) => {
   return result;
 };
 // 解析隐射表 站点/栏目 返回JSX元素
-export const getMapTypeName = (ids, maps = []) => {
+export const getMapTypeName = (ids: any, maps: any[] = []) => {
   const result = [];
   const codes = maps;
 
   for (let i = 0; i < ids.length; i += 1) {
     for (let n = 0; n < codes.length; n += 1) {
       if (ids[i] === codes[n].siteid || ids[i] === codes[n].channelid) {
-        result.push(<Tag key={`mapid_${i}`}>{codes[n].name}</Tag>);
+        result.push(<Tag key={`mapid_${i}`}> {codes[n].name} </Tag>);
         break;
       }
     }
@@ -92,7 +92,7 @@ export const getMapTypeName = (ids, maps = []) => {
   return result;
 };
 // 解析隐射表 站点/栏目 返回字符串
-export const getMapStrName = (ids, maps = []) => {
+export const getMapStrName = (ids: any[], maps: any[] = []) => {
   const result = [];
   const codes = maps;
 
@@ -113,7 +113,7 @@ export const getMapStrName = (ids, maps = []) => {
  * @param {Array} firstMenus 一级菜单
  * @param {Array} [data=[]]  菜单数据
  */
-export const getMenus = (firstMenus, data = []) =>
+export const getMenus = (firstMenus: any[], data: any[] = []) =>
   firstMenus.reduce((arr, current) => {
     const children = [];
     const obj = { ...current };
@@ -128,7 +128,7 @@ export const getMenus = (firstMenus, data = []) =>
  * @description 生成一级菜单
  * @param {Array} [data=[]]  菜单数据
  */
-export const getFirstMenu = (data = []) =>
+export const getFirstMenu = (data: any[] = []) =>
   data.reduce((arr, current) => {
     if (parseInt(current.sortPid, 10) === 0) {
       return arr.concat(current);
@@ -139,7 +139,7 @@ export const getFirstMenu = (data = []) =>
  * @description 生成下级菜单
  * @param {Array} [data=[]]  菜单数据
  */
-export const getChildMenus = (sortId, data = []) =>
+export const getChildMenus = (sortId: string, data: any[] = []) =>
   data.reduce((arr, current) => {
     const children = [];
     if (sortId === current.sortPid) {
@@ -153,15 +153,15 @@ export const getChildMenus = (sortId, data = []) =>
     return arr;
   }, []);
 // 字符串转换成大写
-export const strToUpper = str => str.toString().toUpperCase();
+export const strToUpper = (str: string) => str.toString().toUpperCase();
 // 获取图片Base64编码内容
-export const getBase64 = (img, callback) => {
+export const getBase64 = (img: any, callback: any) => {
   const reader = new FileReader();
   reader.addEventListener('load', () => callback(reader.result));
   reader.readAsDataURL(img);
 };
 // base64 to Blob
-export const base64UrlToBlob = (urlData) => {
+export const base64UrlToBlob = (urlData: string) => {
   // 去掉url的头，并转换为byte
   const bytes = window.atob(urlData.split(',')[1]);
   // 处理异常,将ascii码小于0的转换为大于0
@@ -178,7 +178,7 @@ export const base64UrlToBlob = (urlData) => {
   });
 };
 // 过滤react-quill getContent()的内容，获取待上传的图片
-export const getUploadImgs = (passArr = []) => {
+export const getUploadImgs = (passArr: any[] = []) => {
   if (passArr.length === 0) return passArr;
 
   const newArr = passArr;
@@ -199,13 +199,21 @@ export const getUploadImgs = (passArr = []) => {
   return uploadImages;
 };
 // 使用图片url 替换 Delta中base64 image
-export const covertBase64toUrl = (params) => {
+export const covertBase64toUrl = (params: any) => {
   const { data, contentOps } = params;
   // console.log(data, 'data');
   // console.log(contentOps, 'contentOps');
 
   let n = 0;
-  for (let i = 0; i < contentOps.length; i += 1) {
+  // for (let i = 0; i < contentOps.length; i += 1) {
+  //   const { image } = contentOps[i].insert;
+  //   if (image && image.indexOf('data:image') !== -1) {
+  //     // console.log(image, 'image');
+  //     contentOps[i].insert.image = URL_PREFIX + data[n].url;
+  //     n += 1;
+  //   }
+  // }
+  for (const i of contentOps) {
     const { image } = contentOps[i].insert;
     if (image && image.indexOf('data:image') !== -1) {
       // console.log(image, 'image');
@@ -218,7 +226,7 @@ export const covertBase64toUrl = (params) => {
   return contentOps;
 };
 // 图片上传前
-export const beforeUpload = (file) => {
+export const beforeUpload = (file: any) => {
   const isIMG =
     file.type.indexOf('image/jpeg') !== -1 ||
     file.type.indexOf('image/gif') !== -1 ||
@@ -235,7 +243,7 @@ export const beforeUpload = (file) => {
   return isIMG && isLt;
 };
 // 视频上传前
-export const beforeUploadVideo = (file) => {
+export const beforeUploadVideo = (file: any) => {
   const isMp4 = file.type.indexOf('video/mp4') !== -1;
   const isLt = file.size / 1024 / 1024 < 50;
 
@@ -251,23 +259,14 @@ export const beforeUploadVideo = (file) => {
 // --- END ---
 
 // [models]
-// 删除Token,并跳转至登录页 /user/login
-export function* delToken(params) {
-  const { put } = yield params;
-
-  // yield localStorage.removeItem(LOCALSTORAGENAME);
-  yield put(routerRedux.push(PAGELOGIN));
-}
-// Token失效时，提示并跳转至 /user/login
-export function* noToken(params) {
-  const { message, put } = yield params;
-
-  // yield openMessage.warn(message);
-  yield console.warn(message, 'no token message');
+// Token/Cookie失效时，提示并跳转至 /user/login
+export function* noToken(params: { message: string; put: any }) {
+  const { message, put } = params;
+  yield openMessage.warn(message);
   yield put(routerRedux.push(PAGELOGIN));
 }
 // 跳转页面
-export function* gotoPage(params) {
+export function* gotoPage(params: any) {
   const { url, key, put } = yield params;
 
   // yield console.log(key, 'key');

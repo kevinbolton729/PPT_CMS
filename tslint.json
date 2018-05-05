@@ -5,11 +5,11 @@
   },
   "rules": {
     "quotemark": [true, "single", "jsx-double"],
-    "no-console": [true, "dir", "log", "error", "warn"],
+    "no-console": [false, "dir", "log", "error", "warn"],
     "space-before-function-paren": false,
     "interface-name": [true, "never-prefix"],
     "adjacent-overload-signatures": true,
-    "member-access": [false],
+    "member-access": false,
     "member-ordering": [
       true,
       {
@@ -22,10 +22,11 @@
     "align": [true, "statements"],
     "arrow-parens": [true, "ban-single-arg-parens"],
     "trailing-comma": [true],
-    "no-var-requires": [false],
-    "curly": [false],
-    "prefer-const": [false],
-    "no-shadowed-variable": [false]
+    "no-var-requires": false,
+    "curly": false,
+    "prefer-const": false,
+    "no-shadowed-variable": false,
+    "prefer-for-of": false
     // "no-unused-variable": [true, { "ignore-pattern": "^_" }]
   }
 }
