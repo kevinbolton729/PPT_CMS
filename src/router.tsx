@@ -1,35 +1,39 @@
-import React from 'react';
-import { routerRedux, Switch } from 'dva/router';
 import { LocaleProvider, Spin } from 'antd';
 import zhCN from 'antd/lib/locale-provider/zh_CN';
 import dynamic from 'dva/dynamic';
+import { routerRedux, Switch } from 'dva/router';
+import * as React from 'react';
 import { getRouterData } from './common/router';
 import Authorized from './utils/Authorized';
-import styles from './static/index.less';
+
+// 样式
+const styles = require('./static/index.less');
 
 const { ConnectedRouter } = routerRedux;
-const { AuthorizedRoute } = Authorized;
+const { AuthorizedRoute }: any = Authorized;
 
-dynamic.setDefaultLoadingComponent(() => {
+(dynamic as any).setDefaultLoadingComponent(() => {
   return <Spin className={styles.globalSpin} />;
 });
 
-function RouterConfig({ history, app }) {
+function RouterConfig({ history, app }: any): React.ReactNode {
   const routerData = getRouterData(app);
-  const UserLayout = routerData['/user'].component;
-  const BasicLayout = routerData['/'].component;
+  const components = {
+    UserLayout: routerData['/user'].component,
+    BasicLayout: routerData['/'].component,
+  };
   return (
     <LocaleProvider locale={zhCN}>
       <ConnectedRouter history={history}>
         <Switch>
           <AuthorizedRoute
             path="/user"
-            render={props => <UserLayout {...props} />}
+            render={((props: any) => <components.UserLayout {...props} />) as React.ReactNode}
             redirectPath="/"
           />
           <AuthorizedRoute
             path="/"
-            render={props => <BasicLayout {...props} />}
+            render={((props: any) => <components.BasicLayout {...props} />) as React.ReactNode}
             authority={['admin', 'user']}
             redirectPath="/user/login"
           />

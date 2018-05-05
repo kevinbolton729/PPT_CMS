@@ -1,17 +1,22 @@
-import React, { Component } from 'react';
+import { Alert, Checkbox, Icon } from 'antd';
 import { connect } from 'dva';
 import { Link } from 'dva/router';
-import { Checkbox, Alert, Icon } from 'antd';
-import Login from '@/components/Login';
-import styles from './Login.less';
+import * as React from 'react';
+// 组件库
+import Login from '../../components/Login';
+// 声明
+import { ILoginProps, ILoginStates } from './';
 
+// 样式
+const styles = require('./Login.less');
+// 组件
 const { Tab, UserName, Password, Mobile, Captcha, Submit } = Login;
 
-@connect(({ login, loading }) => ({
+@connect(({ login, loading }: any) => ({
   login,
   submitting: loading.effects['login/login'],
 }))
-export default class LoginPage extends Component {
+class LoginComponent extends React.Component<ILoginProps, ILoginStates> {
   state = {
     type: 'account',
     autoLogin: true,
@@ -24,11 +29,12 @@ export default class LoginPage extends Component {
     },
   };
 
-  onTabChange = (type) => {
+  onTabChange = () => {
+    const { type } = this.state;
     this.setState({ type });
   };
 
-  handleSubmit = (err, values) => {
+  handleSubmit = (err: any, values: any) => {
     const { type } = this.state;
     if (!err) {
       this.props.dispatch({
@@ -41,14 +47,14 @@ export default class LoginPage extends Component {
     }
   };
 
-  changeAutoLogin = (e) => {
+  changeAutoLogin = (event: any) => {
     this.setState({
-      autoLogin: e.target.checked,
+      autoLogin: event.target.checked,
     });
   };
 
-  renderMessage = (content) => {
-    return <Alert style={{ marginBottom: 24 }} message={content} type="error" showIcon />;
+  renderMessage = (content: string) => {
+    return <Alert style={{ marginBottom: 24 }} message={content} type="error" showIcon={true} />;
   };
 
   render() {
@@ -109,3 +115,5 @@ export default class LoginPage extends Component {
     );
   }
 }
+
+export default LoginComponent;
